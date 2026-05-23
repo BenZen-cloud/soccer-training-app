@@ -22,12 +22,12 @@ export function loadState(): TrackerState {
     const merged = mergeSampleDrills(state);
     return {
       ...merged,
-      drills: merged.drills.map((drill: Record<string, unknown>) => ({
+      drills: merged.drills.map((drill) => ({
         ...drill,
         count: drill.count ?? "",
         countHistory: Array.isArray(drill.countHistory) ? drill.countHistory : [],
         durationSeconds: Number(drill.durationSeconds || 0) || parseStoredDuration(drill.timer),
-      })),
+      })) as Drill[],
     };
   } catch {
     return defaultState;

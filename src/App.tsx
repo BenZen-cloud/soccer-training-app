@@ -880,7 +880,9 @@ function ProgressPage({ players, drills, sessions }: { players: Player[]; drills
                 {playerDrills.slice(0, 5).map((drill) => (
                   <div key={drill.id} className="flex justify-between rounded-md bg-slate-50 px-3 py-2 text-sm">
                     <span>{drill.name}</span>
-                    <span>{drill.countHistory?.at(-1)?.count ?? (drill.completed ? "Done" : "Open")}</span>
+                    <span>
+                      {drill.countHistory?.[drill.countHistory.length - 1]?.count ?? (drill.completed ? "Done" : "Open")}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -937,7 +939,7 @@ function TimerPanel({
   totalDrills?: number;
   progress?: number;
 }) {
-  const lastSavedReps = countHistory.at(-1)?.count;
+  const lastSavedReps = countHistory[countHistory.length - 1]?.count;
   const details = lastSavedReps !== undefined ? `Reps: ${lastSavedReps}` : totalDrills && completedCount !== undefined && completedCount >= totalDrills && !running ? "Complete" : running ? "Running" : "Press Start";
   const timeLeftPercent = duration ? Math.max(0, Math.min(100, Math.round((seconds / duration) * 100))) : 0;
 
