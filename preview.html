@@ -1,0 +1,1359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Soccer Training Tracker</title>
+    <style>
+      :root {
+        color: #17211b;
+        background: #f7faf8;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; }
+      button, input, textarea, select { font: inherit; }
+      header { background: #fff; border-bottom: 1px solid #dbe3dd; }
+      .wrap { max-width: 940px; margin: 0 auto; padding: 18px; }
+      .top { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { margin-bottom: 0; font-size: 28px; letter-spacing: .04em; }
+      h2 { font-size: 28px; margin-bottom: 4px; }
+      .muted { color: #64746a; font-size: 14px; }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .crest { width: 52px; height: 52px; border: 3px solid #237a24; border-radius: 14px 14px 20px 20px; display:grid; place-items:center; color:#237a24; font-weight:900; }
+      .brand strong { color: #237a24; }
+      .tag { color:#6b7280; font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+      .menu { border:0; background:#fff; font-size:34px; line-height:1; color:#17211b; }
+      .nav { display: flex; flex-wrap: wrap; gap: 8px; }
+      .nav button, .btn {
+        border: 1px solid #d3ddd6;
+        border-radius: 6px;
+        background: #fff;
+        color: #26332b;
+        padding: 10px 12px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .nav button.active, .btn.primary { background: #15803d; border-color: #15803d; color: #fff; }
+      .nav {
+        position: fixed;
+        left: 50%;
+        right: auto;
+        bottom: 0;
+        z-index: 20;
+        width: min(100%, 940px);
+        transform: translateX(-50%);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        border-top: 1px solid #dbe3dd;
+        border-left: 1px solid #dbe3dd;
+        border-right: 1px solid #dbe3dd;
+        background: rgba(255,255,255,.96);
+        backdrop-filter: blur(8px);
+      }
+      .nav button { border: 0; border-radius: 0; padding: 12px 6px 14px; font-weight: 600; }
+      .nav button.active { background: #fff; color: #15803d; box-shadow: inset 0 4px 0 #15803d; }
+      .btn.light { background: #fff; color: #26332b; }
+      .btn.danger { color: #c02626; border-color: #f0c8c8; }
+      main { padding: 22px 18px 96px; }
+      .grid { display: grid; gap: 18px; }
+      .home { grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); }
+      .card { background: #fff; border: 1px solid #dbe3dd; border-radius: 8px; padding: 18px; box-shadow: 0 10px 30px rgba(23,33,27,.08); }
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 18px 0; }
+      .stat { background: #f4f7f5; border: 1px solid #dbe3dd; border-radius: 8px; padding: 14px; }
+      .stat strong { display: block; font-size: 26px; margin-top: 4px; }
+      .video { width: 100%; aspect-ratio: 16/9; border: 1px solid #dbe3dd; border-radius: 8px; background: #eef3f0; }
+      .video-wrap { position: relative; aspect-ratio: 16/9; border: 1px solid #dbe3dd; border-radius: 8px; overflow: hidden; background: #123; }
+      .video-wrap iframe, .video-wrap img, .video-wrap #ytPlayer { position:absolute; inset:0; width:100%; height:100%; border:0; }
+      .video-wrap img { z-index: 2; object-fit: cover; opacity: .92; }
+      .video-wrap iframe, .video-wrap #ytPlayer { z-index: 1; background: transparent; }
+      .video-wrap.playing iframe { z-index: 1; }
+      .video-wrap.playing img { display:block; }
+      .video-wrap.playing .video-title { display:block; }
+      .video-wrap.iframe-loaded.playing img, .video-wrap.iframe-loaded.playing .video-title { display:none; }
+      .video-wrap.iframe-loaded.playing iframe { z-index: 5; }
+      .video-wrap.iframe-loaded.playing:not(.blocked-preview) .video-fallback { display:none; }
+      .video-fallback { position:absolute; inset:0; z-index:3; display:grid; place-items:center; background:rgba(10,20,14,.16); color:#fff; text-align:center; text-decoration:none; font-weight:900; }
+      .video-fallback.playing { display:grid; background:rgba(10,20,14,.22); }
+      .video-fallback.playing span { background:rgba(0,0,0,.58); border-radius:999px; padding:8px 12px; font-size:13px; }
+      .video-fallback.playing .play-dot { display:none; }
+      .video-title { position:absolute; left:18px; right:18px; bottom:14px; z-index:1; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.65); font-weight:900; font-size:20px; }
+      .play-dot { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.92); color:#1f7a24; font-size:42px; margin:0 auto 12px; }
+      .timer { background: #0f172a; color: #fff; text-align: center; border-radius: 8px; font-size: 48px; font-weight: 800; padding: 24px; margin: 16px 0; font-variant-numeric: tabular-nums; }
+      .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .progressbar { height: 12px; border-radius: 999px; background: #e9efeb; overflow: hidden; }
+      .progressbar span { display: block; height: 100%; background: #15803d; }
+      .row { display: grid; grid-template-columns: auto minmax(160px, 1fr) auto auto auto; gap: 12px; align-items: center; border-bottom: 1px solid #e2e8e4; padding: 12px 0; }
+      .row:last-child { border-bottom: 0; }
+      .compact-list { max-height:520px; overflow:auto; padding-top:6px; padding-bottom:6px; }
+      .compact-list .row { grid-template-columns:28px minmax(180px, 1fr) 74px 64px auto; gap:8px; padding:6px 0; font-size:13px; }
+      .compact-list .muted { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .compact-list .btn { padding:5px 8px; font-size:12px; }
+      .form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+      label { display: grid; gap: 5px; font-size: 13px; font-weight: 700; color: #435047; }
+      input, textarea, select { width: 100%; border: 1px solid #cbd5cf; border-radius: 6px; padding: 10px; background: #fff; color: #17211b; }
+      textarea { min-height: 72px; resize: vertical; }
+      .page-title { margin-bottom: 18px; }
+      .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pill { display: inline-block; color: #15803d; font-weight: 800; }
+      .profile { display:flex; gap:24px; align-items:center; margin-bottom:22px; }
+      .jersey { width:104px; height:104px; border:1px solid #dbe3dd; border-radius:50%; display:grid; place-items:center; background:#fff; }
+      .jersey img, .player-photo-box img { width:100%; height:100%; object-fit:cover; display:block; }
+      .jersey img { border-radius:50%; }
+      .shirt { width:58px; height:62px; background:#237a24; color:#fff; display:grid; place-items:center; font-weight:900; font-size:24px; border-radius:18px 18px 8px 8px; clip-path: polygon(18% 12%, 34% 0, 66% 0, 82% 12%, 100% 22%, 88% 42%, 78% 36%, 78% 100%, 22% 100%, 22% 36%, 12% 42%, 0 22%); }
+      .meta-line { display:flex; gap:46px; flex-wrap:wrap; margin-top:14px; color:#4b5563; }
+      .meta-line span { display:flex; gap:8px; align-items:center; }
+      .panel-title { color:#237a24; font-size:20px; font-weight:900; text-transform:uppercase; }
+      .panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+      .timer-progress { display:grid; grid-template-columns: 1.25fr .9fr; gap:28px; align-items:stretch; }
+      .timer-side { padding-right:28px; border-right:1px solid #dbe3dd; }
+      .timer-big { font-size:72px; line-height:1; font-weight:900; letter-spacing:.04em; font-variant-numeric:tabular-nums; margin:42px 0; }
+      .progress-side { padding-left:8px; }
+      .progress-side .big { font-size:64px; font-weight:900; }
+      .progress-side .slash { color:#8b9490; font-size:34px; font-weight:500; }
+      .smallbar { height:10px; background:#dce2df; border-radius:999px; overflow:hidden; margin-top:12px; }
+      .smallbar span { display:block; height:100%; background:#15803d; }
+      .countdown-bar { height:12px; background:#dce2df; border-radius:999px; overflow:hidden; margin:0 0 10px; border:1px solid #cbd8d0; }
+      .countdown-bar span { display:block; height:100%; background:#15803d; transition:width .25s linear; }
+      .drills-table { width:100%; border-collapse:collapse; }
+      .drills-table th { color:#27313a; font-size:12px; text-align:left; padding:12px 10px; border-top:1px solid #e5ebe7; border-bottom:1px solid #e5ebe7; }
+      .drills-table td { padding:10px; border-bottom:1px solid #edf1ee; vertical-align:middle; }
+      .drills-table input { padding:8px 10px; }
+      .drill-selector { max-height: 360px; overflow:auto; border:1px solid #e5ebe7; border-radius:8px; }
+      .drill-selector .drills-table th { position:sticky; top:0; z-index:1; background:#f8fbf9; padding:7px 8px; }
+      .drill-selector .drills-table td { padding:6px 8px; }
+      .drill-selector .drills-table input { padding:5px 7px; font-size:13px; }
+      .drill-name-btn { width:100%; text-align:left; padding:6px 8px; border-radius:6px; border:1px solid #d3ddd6; background:#fff; color:#17211b; font-weight:800; cursor:pointer; }
+      .select-chip { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:12px; font-weight:800; }
+      .select-chip input { width:auto; }
+      .stars { color:#237a24; font-size:21px; letter-spacing:1px; white-space:nowrap; }
+      .stars .off { color:#a7adb0; }
+      .notes-rating { display:grid; grid-template-columns:1.2fr .9fr; gap:28px; }
+      .notes-rating > div:first-child { border-right:1px solid #dbe3dd; padding-right:28px; }
+      .session-stars { color:#a7adb0; font-size:50px; letter-spacing:8px; margin:16px 0 24px; }
+      .video-controls { display:grid; grid-template-columns: 300px minmax(180px, .8fr) minmax(260px, 1.2fr); gap:12px; margin-bottom:16px; align-items:start; }
+      .player-photo-card { grid-row:1 / span 2; align-self:start; display:grid; gap:7px; }
+      .player-photo-box { aspect-ratio:1/1; border:1px dashed #aebdb4; border-radius:8px; background:#f4f7f5; overflow:hidden; display:grid; place-items:center; color:#64746a; font-size:12px; font-weight:800; text-align:center; padding:8px; cursor:pointer; }
+      .player-photo-card input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+      .video-stage { grid-column:1/-1; width:min(100%, 820px); justify-self:center; }
+      .inline-timer { border:1px solid #dbe3dd; border-radius:8px; padding:12px; background:#f8fbf9; }
+      .inline-timer { position: relative; }
+      .inline-timer .panel-title { font-size:15px; }
+      .inline-timer .timer-big { font-size:28px; margin:8px 0; }
+      .inline-timer .btn { padding:7px 10px; font-size:13px; }
+      .inline-timer .buttons { gap:6px; }
+      .timer-summary { margin-top:10px; border-top:1px solid #dbe3dd; padding-top:8px; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+      .timer-summary div { border:1px solid #e5ebe7; border-radius:6px; background:#fff; padding:6px; min-width:0; }
+      .timer-summary span { display:block; color:#64746a; font-size:10px; font-weight:800; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .timer-summary strong { display:block; color:#17211b; font-size:16px; line-height:1.1; margin-top:2px; }
+      .timer-summary .mini-progress { grid-column:1/-1; padding:0; border:0; background:transparent; }
+      .count-history { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; font-size:12px; color:#435047; }
+      .count-history span { border:1px solid #dbe3dd; border-radius:999px; padding:4px 8px; background:#fff; }
+      .playlist { display:grid; gap:8px; }
+      .playlist { gap:6px; max-height:280px; overflow:auto; }
+      .playlist-row { display:grid; grid-template-columns:28px minmax(120px,1fr) 72px auto auto; gap:6px; align-items:center; border:1px solid #dbe3dd; border-radius:6px; background:#fff; padding:6px 8px; }
+      .playlist-row.active { border-color:#15803d; box-shadow: inset 4px 0 0 #15803d; }
+      .playlist-row .order { color:#64746a; font-weight:900; }
+      .playlist-row button { padding:4px 7px; }
+      .playlist-row .remove { color:#b42318; border-color:#f1c7c2; }
+      @media (max-width: 820px) {
+        .home, .stats, .form, .two { grid-template-columns: 1fr; }
+        .timer-progress, .notes-rating, .video-controls { grid-template-columns:1fr; }
+        .timer-side, .notes-rating > div:first-child { border-right:0; padding-right:0; }
+        .timer-big { font-size:54px; }
+        .profile { align-items:flex-start; }
+        .jersey { width:86px; height:86px; }
+        .row { grid-template-columns: auto 1fr; }
+        .row .actions, .row .meta { grid-column: 2; }
+        .drills-table { min-width:760px; }
+        .table-scroll { overflow:auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap top">
+        <div class="brand">
+          <div class="crest">CT</div>
+          <div>
+            <h1>SOCCER <strong>TRAINING</strong></h1>
+            <div class="tag">Train Now. Every Touch Counts.</div>
+          </div>
+        </div>
+        <button class="menu" aria-label="Menu">☰</button>
+        <nav class="nav" id="nav"></nav>
+      </div>
+    </header>
+    <main class="wrap" id="app"></main>
+    <script>
+      const key = "soccer-training-tracker-preview-v1";
+      const defaultPlayerAvatar = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="42" fill="#e7f6ec"/><circle cx="120" cy="116" r="72" fill="#2fb25d"/><path d="M58 116c12-42 36-62 62-62s50 20 62 62c-12 38-36 56-62 56s-50-18-62-56Z" fill="#39c96b"/><circle cx="92" cy="108" r="16" fill="#fff"/><circle cx="148" cy="108" r="16" fill="#fff"/><circle cx="96" cy="112" r="8" fill="#17211b"/><circle cx="144" cy="112" r="8" fill="#17211b"/><path d="M96 145c16 13 32 13 48 0" fill="none" stroke="#17211b" stroke-width="8" stroke-linecap="round"/><path d="M70 62 49 35l39 8M170 62l21-27-39 8" fill="#238447"/><path d="M79 178h82l15 45H64l15-45Z" fill="#fff"/><path d="M89 178h62v45H89z" fill="#237a24"/><text x="120" y="212" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="900" fill="#fff">10</text><circle cx="190" cy="190" r="22" fill="#fff" stroke="#17211b" stroke-width="5"/><path d="M169 190h42M190 169v42" stroke="#17211b" stroke-width="5"/><circle cx="190" cy="190" r="6" fill="#17211b"/></svg>`)}`;
+      const starter = {
+        page: "Home",
+        selectedPlayer: "player-jordan",
+        selectedVideoDrill: "",
+        sessionDrillIds: [],
+        pendingCountSave: false,
+        resting: false,
+        restSeconds: 30,
+        restDuration: 30,
+        seconds: 60,
+        duration: 60,
+        running: false,
+        players: [{ id: "player-jordan", name: "Jordan", notes: "Sample player created from the Jordan 2.0 sheet.", drillIds: [], photoDataUrl: defaultPlayerAvatar }],
+        sessions: [{ id: "session-1", playerId: "player-jordan", date: "2026-05-09", minutes: 35, completedDrills: 10, notes: "Started with ball mastery and finishing work." }],
+        drills: [
+          ["Stationary Tap","https://www.youtube.com/watch?v=x3ufIEsdwYo&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=4",true,5,"30 Secs","Assigned from Jordan 2.0 training plan."],
+          ["Taps Up and Back","https://www.youtube.com/watch?v=r5Zi1hxMqO4&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=5",false,2,"30 Secs","Available drill from Jordan 2.0."],
+          ["Staionary Scissor","https://www.youtube.com/watch?v=n6ZI6DnBQqM&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=7",true,5,"30 Secs","Assigned from Jordan 2.0 training plan."],
+          ["Push & Scissor","https://www.youtube.com/watch?v=yxRlPlwEeuI&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=8",false,2,"30 Secs","Available drill from Jordan 2.0."],
+          ["Right Foot 8","https://www.youtube.com/watch?v=tkBF1DO63AM&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Left Foot 8","https://www.youtube.com/watch?v=5H5gluO966g&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=15",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Messie slide","https://www.youtube.com/watch?v=Tlz9OJOYkEM&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=2",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Ronaldo Combo","https://www.youtube.com/watch?v=2phbtCpJmxs&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=4",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Sole Turn Combo","https://www.youtube.com/watch?v=sTFtejPV0G0&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=7",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["MARADONA TURN","https://www.youtube.com/watch?v=z8zraSIPI6k&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=3",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Fake shot pull","https://www.youtube.com/watch?v=xMmrczo6UzE&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=5",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["Body fake combo","https://www.youtube.com/watch?v=CRTAEnwmd50&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=6",true,3,"1","Assigned from Jordan 2.0 training plan."],
+          ["HOW TO DO THE STOP & GO","https://www.youtube.com/watch?v=loXlmv_13vU&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=7",true,1,"1","Assigned from Jordan 2.0 training plan."],
+          ["Learning the Series: Part 1","https://www.youtube.com/watch?v=yT8mKo0lGuk",true,2,"3","Assigned from Jordan 2.0 training plan."],
+          ["Shooting with right foot","",true,4,"5","Assigned from Jordan 2.0 training plan."],
+          ["Shooting with left foot","",true,3,"5","Assigned from Jordan 2.0 training plan."]
+        ].map((d, i) => ({ id: "drill-" + (i + 1), name: d[0], videoLink: d[1], completed: d[2], rating: d[3], timer: d[4], durationSeconds: parseDuration(d[4]), notes: d[5], count: "", countHistory: [] }))
+      };
+      const allDrillSeeds = [
+        {
+          "name": "Stationary Boxes",
+          "videoLink": "https://www.youtube.com/watch?v=mJmmuulpArk&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O"
+        },
+        {
+          "name": "Boxes Up & Back",
+          "videoLink": "https://www.youtube.com/watch?v=_LHlY6V2fqM&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=2"
+        },
+        {
+          "name": "Box & Roll",
+          "videoLink": "https://www.youtube.com/watch?v=-3YP2_plksE&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=3"
+        },
+        {
+          "name": "Stationary Taps",
+          "videoLink": "https://www.youtube.com/watch?v=x3ufIEsdwYo&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=4"
+        },
+        {
+          "name": "Taps Up & Back",
+          "videoLink": "https://www.youtube.com/watch?v=r5Zi1hxMqO4&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=5"
+        },
+        {
+          "name": "Stationary Scissors",
+          "videoLink": "https://www.youtube.com/watch?v=n6ZI6DnBQqM&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=7"
+        },
+        {
+          "name": "Push & Scissor",
+          "videoLink": "https://www.youtube.com/watch?v=yxRlPlwEeuI&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=8"
+        },
+        {
+          "name": "HOW TO DO THE IN & OUT",
+          "videoLink": "https://www.youtube.com/watch?v=OuxxtozHsEk&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=9"
+        },
+        {
+          "name": "The Snake (3 variations)",
+          "videoLink": "https://www.youtube.com/watch?v=3kHdgYMejIM&list=PLsRSijrCyTQeDbDg3IEF5BS-XnrMQUd7O&index=12"
+        },
+        {
+          "name": "HOW TO DO THE TRIANGLE STEP",
+          "videoLink": "https://www.youtube.com/watch?v=sXZqAn0kOOY&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao"
+        },
+        {
+          "name": "HOW TO DO THE PUSH & PULL",
+          "videoLink": "https://www.youtube.com/watch?v=efdjWYTEic0&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=2"
+        },
+        {
+          "name": "HOW TO DO THE ONE CONE SALSA",
+          "videoLink": "https://www.youtube.com/watch?v=ETmpFhnN6d0&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=3"
+        },
+        {
+          "name": "HOW TO DO THE V THEN BOX",
+          "videoLink": "https://www.youtube.com/watch?v=Mxq07UuZ2SM&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=4"
+        },
+        {
+          "name": "HOW TO DO THE V INSIDE",
+          "videoLink": "https://www.youtube.com/watch?v=v_Js4m82StQ&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=5"
+        },
+        {
+          "name": "HOW TO DO THE CROSSOVER PUSH",
+          "videoLink": "https://www.youtube.com/watch?v=AbB-IB6NFs8&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=6"
+        },
+        {
+          "name": "HOW TO DO THE BOX THEN ROLL",
+          "videoLink": "https://www.youtube.com/watch?v=gfTojQFNofw&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=7"
+        },
+        {
+          "name": "HOW TO DO THE V OUTSIDE",
+          "videoLink": "https://www.youtube.com/watch?v=tFYweU9J3AA&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=8"
+        },
+        {
+          "name": "HOW TO DO THE SQUARE STEP",
+          "videoLink": "https://www.youtube.com/watch?v=IbK_QSRFvcM&list=PLsRSijrCyTQfnhkwKFsqn5_X2CfPIKVao&index=9"
+        },
+        {
+          "name": "HOW TO BOX STEP",
+          "videoLink": "https://www.youtube.com/watch?v=aIegmW6KdPY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=1"
+        },
+        {
+          "name": "HOW TO DO THE CROSS BACK",
+          "videoLink": "https://www.youtube.com/watch?v=s6-dBB0ubgQ&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=2"
+        },
+        {
+          "name": "HOW TO DO IN & OUT BOXES",
+          "videoLink": "https://www.youtube.com/watch?v=zWw_cjwrc-k&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=3"
+        },
+        {
+          "name": "HOW TO DO THE DRAG",
+          "videoLink": "https://www.youtube.com/watch?v=nPspDf_ZZw0&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=4"
+        },
+        {
+          "name": "HOW TO DO THE OUTSIDE V",
+          "videoLink": "https://www.youtube.com/watch?v=9wybqZ3bOU0&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=5"
+        },
+        {
+          "name": "HOW TO DO THE FAKE SHOT, V",
+          "videoLink": "https://www.youtube.com/watch?v=MYMyyBLSzFU&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=6"
+        },
+        {
+          "name": "HOW TO DO THE IRISH JIG",
+          "videoLink": "https://www.youtube.com/watch?v=gLC614AEfuA&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=7"
+        },
+        {
+          "name": "HOW TO DO THE LACES PULL BACK",
+          "videoLink": "https://www.youtube.com/watch?v=S_hEeCkdQ7Q&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=9"
+        },
+        {
+          "name": "HOW TO DO THE V TURN",
+          "videoLink": "https://www.youtube.com/watch?v=-0Qni9p5cvs&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=10"
+        },
+        {
+          "name": "HOW TO DO THE REPEAT V",
+          "videoLink": "https://www.youtube.com/watch?v=7er41JHV5cY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=11"
+        },
+        {
+          "name": "HOW TO SLIDE & ROLL",
+          "videoLink": "https://www.youtube.com/watch?v=P4rJS_ZNCJY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=12"
+        },
+        {
+          "name": "HOW TO DO HOT STEPPERS",
+          "videoLink": "https://www.youtube.com/watch?v=bkMonixbua4&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=13"
+        },
+        {
+          "name": "HOW TO DO THE RIGHT FOOT 8",
+          "videoLink": "https://www.youtube.com/watch?v=tkBF1DO63AM&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-"
+        },
+        {
+          "name": "HOW TO DO THE LEFT FOOT 8",
+          "videoLink": "https://www.youtube.com/watch?v=5H5gluO966g&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=15"
+        },
+        {
+          "name": "HOW TO DO THE MESSI SLIDE",
+          "videoLink": "https://www.youtube.com/watch?v=Tlz9OJOYkEM&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=2"
+        },
+        {
+          "name": "HOW TO DO THE MARADONA TURN",
+          "videoLink": "https://www.youtube.com/watch?v=z8zraSIPI6k&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=3"
+        },
+        {
+          "name": "HOW TO DO THE RONALDO COMBO",
+          "videoLink": "https://www.youtube.com/watch?v=2phbtCpJmxs&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=4"
+        },
+        {
+          "name": "HOW TO DO THE FAKE SHOT, PULL",
+          "videoLink": "https://www.youtube.com/watch?v=xMmrczo6UzE&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=5"
+        },
+        {
+          "name": "HOW TO DO THE BODY FAKE COMBO",
+          "videoLink": "https://www.youtube.com/watch?v=CRTAEnwmd50&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=6"
+        },
+        {
+          "name": "HOW TO DO THE SOLE TURN COMBO",
+          "videoLink": "https://www.youtube.com/watch?v=sTFtejPV0G0&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=7"
+        },
+        {
+          "name": "HOW TO DO THE V TURN COMBO",
+          "videoLink": "https://www.youtube.com/watch?v=p017HYtZcvo&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=8"
+        },
+        {
+          "name": "HOW TO DO THE STEP OVER TURN",
+          "videoLink": "https://www.youtube.com/watch?v=yWceDAv5EZY&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=9"
+        },
+        {
+          "name": "HOW TO DO THE SOLE TURN (RIGHT)",
+          "videoLink": "https://www.youtube.com/watch?v=cZrbj465P8E&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=10"
+        },
+        {
+          "name": "HOW TO DO THE SOLE TURN (LEFT)",
+          "videoLink": "https://www.youtube.com/watch?v=Glw_ijJydVE&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=11"
+        },
+        {
+          "name": "HOW TO DO A V TURN (RIGHT)",
+          "videoLink": "https://www.youtube.com/watch?v=09p9VeAMw5Y&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=12"
+        },
+        {
+          "name": "HOW TO DO A V TURN (LEFT)",
+          "videoLink": "https://www.youtube.com/watch?v=zh6AvoCBmP8&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=13"
+        },
+        {
+          "name": "HOW TO DO THE STEP OVER INSIDE",
+          "videoLink": "https://www.youtube.com/watch?v=ndQuF62L2KE&list=PLsRSijrCyTQfdtOl85gJ9u9XBWjyr30W-&index=14"
+        },
+        {
+          "name": "HOW TO DO THE STOP & GO REMIX",
+          "videoLink": "https://www.youtube.com/watch?v=-MISTsQW0PI&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q"
+        },
+        {
+          "name": "HOW TO DO THE IN & OUT",
+          "videoLink": "https://www.youtube.com/watch?v=JZ-9tWKzuEE&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=2"
+        },
+        {
+          "name": "HOW TO DO THE BOXERS & PUSH",
+          "videoLink": "https://www.youtube.com/watch?v=pM3yDxgi5Rc&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=3"
+        },
+        {
+          "name": "HOW TO DO THE SMILEY FACE",
+          "videoLink": "https://www.youtube.com/watch?v=8Tv7oPpLyO8&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=4"
+        },
+        {
+          "name": "HOW TO DO THE BOX STEP",
+          "videoLink": "https://www.youtube.com/watch?v=xKBl6zBTMtw&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=5"
+        },
+        {
+          "name": "HOW TO DO THE ROLL & PUSH",
+          "videoLink": "https://www.youtube.com/watch?v=wCZmqB6vO84&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=6"
+        },
+        {
+          "name": "HOW TO DO THE STOP & GO",
+          "videoLink": "https://www.youtube.com/watch?v=loXlmv_13vU&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=7"
+        },
+        {
+          "name": "HOW TO DO THE OUTSIDE V STEP",
+          "videoLink": "https://www.youtube.com/watch?v=1EYoD__-rjA&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=8"
+        },
+        {
+          "name": "HOW TO DO THE RIGHT FOOT ONLY",
+          "videoLink": "https://www.youtube.com/watch?v=Tz4lm4eGf_Q&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=9"
+        },
+        {
+          "name": "HOW TO DO THE LEFT FOOT ONLY",
+          "videoLink": "https://www.youtube.com/watch?v=89DiQePkgn8&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=14"
+        },
+        {
+          "name": "HOW TO DO THE ALL OUTSIDE",
+          "videoLink": "https://www.youtube.com/watch?v=3djx12EsnTs&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=10"
+        },
+        {
+          "name": "HOW TO DO THE BACKWARDS V",
+          "videoLink": "https://www.youtube.com/watch?v=pz13_9N5LsQ&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=11"
+        },
+        {
+          "name": "HOW TO DO THE SCISSOR STEP (LEFT)",
+          "videoLink": "https://www.youtube.com/watch?v=r7rH4uQ2Xl4&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=12"
+        },
+        {
+          "name": "HOW TO DO THE SCISSOR STEP (RIGHT)",
+          "videoLink": "https://www.youtube.com/watch?v=n--ERtUuI38&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=18"
+        },
+        {
+          "name": "HOW TO DO THE V STEP",
+          "videoLink": "https://www.youtube.com/watch?v=tNebcM7qeCs&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=13"
+        },
+        {
+          "name": "HOW TO DO THE V COMBO",
+          "videoLink": "https://www.youtube.com/watch?v=8NMHglstOfE&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=15"
+        },
+        {
+          "name": "HOW TO DO THE HOT STEPPERS",
+          "videoLink": "https://www.youtube.com/watch?v=ycnKpZVLhD8&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=16"
+        },
+        {
+          "name": "HOW TO DO THE SLIDE",
+          "videoLink": "https://www.youtube.com/watch?v=nFGizLlTOGU&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=17"
+        },
+        {
+          "name": "HOW TO DO THE UP & BACKS",
+          "videoLink": "https://www.youtube.com/watch?v=o1_BGHsENDU&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=19"
+        },
+        {
+          "name": "HOW TO DO THE SALSA SLIDE",
+          "videoLink": "https://www.youtube.com/watch?v=XsngP6ocjf4&list=PLsRSijrCyTQflXzVV-O5QMnov36FcSF7q&index=20"
+        },
+        {
+          "name": "Learning the Series: Part 1",
+          "videoLink": "https://www.youtube.com/watch?v=yT8mKo0lGuk&list=PLsRSijrCyTQd_BRdeJxjxQZPlSWxwZfVn&index=2"
+        },
+        {
+          "name": "Learning the Series: Part 2",
+          "videoLink": "https://www.youtube.com/watch?v=QHTGgc7rcRI&list=PLsRSijrCyTQd_BRdeJxjxQZPlSWxwZfVn&index=3"
+        },
+        {
+          "name": "Learning the Series: Part 3",
+          "videoLink": "https://www.youtube.com/watch?v=8mvi-Ej2kvA&list=PLsRSijrCyTQd_BRdeJxjxQZPlSWxwZfVn&index=4"
+        },
+        {
+          "name": "Learning the Series: Part 4",
+          "videoLink": "https://www.youtube.com/watch?v=CIXB_WD4M3M&list=PLsRSijrCyTQd_BRdeJxjxQZPlSWxwZfVn&index=5"
+        },
+        {
+          "name": "ELITE TRAINING W/ MLS PRO! (30 MIN)",
+          "videoLink": "https://www.youtube.com/watch?v=kQkBmzmC4r8&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=4"
+        },
+        {
+          "name": "1000 TOUCHES W/ MLS PRO (SKILLS SESSION)",
+          "videoLink": "https://www.youtube.com/watch?v=guZoJVJEJ3E&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=1"
+        },
+        {
+          "name": "HOW TO PRACTICE LIKE A MLS PRO (FULL SKILLS SESSION)",
+          "videoLink": "https://www.youtube.com/watch?v=ZkEf6w1Qde8&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=2"
+        },
+        {
+          "name": "PRO SOCCER SKILLS SESSION (10 MIN)",
+          "videoLink": "https://www.youtube.com/watch?v=UnZkB7GmKIE&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=3"
+        },
+        {
+          "name": "HOW TO TRAIN LIKE A PRO SOCCER PLAYER! (30 MIN)",
+          "videoLink": "https://www.youtube.com/watch?v=cnueza21x-k&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=5"
+        },
+        {
+          "name": "BEGINNER SKILLS SESSION W/ MLS PRO! (15 MIN)",
+          "videoLink": "https://www.youtube.com/watch?v=wbyr6XfYadA&list=PLsRSijrCyTQer7mcABT3dzzokMoseM-TP&index=6"
+        },
+        {
+          "name": "1 Touch & Catch",
+          "videoLink": "https://www.youtube.com/watch?v=HRFJlPYhFV0&list=PLsRSijrCyTQdXgUazBXHhu1mYqZQUe-sb&index=1"
+        },
+        {
+          "name": "1 Touch Bounce Juggling",
+          "videoLink": "https://www.youtube.com/watch?v=Vkt6jujaeeE&list=PLsRSijrCyTQdXgUazBXHhu1mYqZQUe-sb&index=2"
+        },
+        {
+          "name": "2 Touches & Catch",
+          "videoLink": "https://www.youtube.com/watch?v=svFlNblytKE&list=PLsRSijrCyTQdXgUazBXHhu1mYqZQUe-sb&index=3"
+        },
+        {
+          "name": "2 Touch Bounce Juggling",
+          "videoLink": "https://www.youtube.com/watch?v=ZK7LVUkRSxc&list=PLsRSijrCyTQdXgUazBXHhu1mYqZQUe-sb&index=4"
+        },
+        {
+          "name": "1 Touch Alternating",
+          "videoLink": "https://www.youtube.com/watch?v=jdWl2AxTkwA&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=2"
+        },
+        {
+          "name": "2 Touch Alternating",
+          "videoLink": "https://www.youtube.com/watch?v=Aj9z4Vw4yBw&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=5"
+        },
+        {
+          "name": "3 Touch Alternating",
+          "videoLink": "https://www.youtube.com/watch?v=K_P6f8LrLTs&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=9"
+        },
+        {
+          "name": "Above the Head Juggling",
+          "videoLink": "https://www.youtube.com/watch?v=Iymbb9lEgZU&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=3"
+        },
+        {
+          "name": "All Body One Touch",
+          "videoLink": "https://www.youtube.com/watch?v=VTcrh1GejYI&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=4"
+        },
+        {
+          "name": "All Body 2 Touches",
+          "videoLink": "https://www.youtube.com/watch?v=HfRnbN9vgzA&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=7"
+        },
+        {
+          "name": "HOW TO DO LOW THEN HIGH JUGGLES",
+          "videoLink": "https://www.youtube.com/watch?v=Ga1rZqDoXEM&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I"
+        },
+        {
+          "name": "Feet & Thigh Combo",
+          "videoLink": "https://www.youtube.com/watch?v=_A8wE3yjOxc&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=6"
+        },
+        {
+          "name": "Head Only Juggling",
+          "videoLink": "https://www.youtube.com/watch?v=INMLOlrJKYE&list=PLsRSijrCyTQe0b1_1AwawsgD3dCdfWn9I&index=8"
+        },
+        {
+          "name": "The Rainbow",
+          "videoLink": "https://www.youtube.com/watch?v=Pd8rjvqI1uc&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=1"
+        },
+        {
+          "name": "One Foot Flick",
+          "videoLink": "https://www.youtube.com/watch?v=RO-dWRblWVM&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=2"
+        },
+        {
+          "name": "The Scoop",
+          "videoLink": "https://www.youtube.com/watch?v=_A-mqI_r9_o&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=3"
+        },
+        {
+          "name": "The Stomp",
+          "videoLink": "https://www.youtube.com/watch?v=r_39aeZdQM8&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=4"
+        },
+        {
+          "name": "Spin Lift",
+          "videoLink": "https://www.youtube.com/watch?v=y9A-BaDWh5U&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=5"
+        },
+        {
+          "name": "Toe Pinch",
+          "videoLink": "https://www.youtube.com/watch?v=qezJwV_MOeE&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=6"
+        },
+        {
+          "name": "Toe Lift",
+          "videoLink": "https://www.youtube.com/watch?v=NxJPdZi4lkk&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=7"
+        },
+        {
+          "name": "Two Foot Flick",
+          "videoLink": "https://www.youtube.com/watch?v=LlZ89xz6fFE&list=PLsRSijrCyTQfVrtCpgsN3JvqazZm5zbH8&index=8"
+        },
+        {
+          "name": "The Touzani",
+          "videoLink": "https://www.youtube.com/watch?v=jy6QcTrEwqg&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a"
+        },
+        {
+          "name": "Spin Backheel",
+          "videoLink": "https://www.youtube.com/watch?v=plcMMxvadyw&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=2"
+        },
+        {
+          "name": "The Wingrove",
+          "videoLink": "https://www.youtube.com/watch?v=ak8bwXfhRUU&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=3"
+        },
+        {
+          "name": "Around the World",
+          "videoLink": "https://www.youtube.com/watch?v=-0Gj4kWSKmA&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=4"
+        },
+        {
+          "name": "The Crossover",
+          "videoLink": "https://www.youtube.com/watch?v=bZekGHNjEyk&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=5"
+        },
+        {
+          "name": "Slam Down Lift",
+          "videoLink": "https://www.youtube.com/watch?v=JlmUxMHgg0Q&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=6"
+        },
+        {
+          "name": "Hop The World",
+          "videoLink": "https://www.youtube.com/watch?v=6aZNl5axNgQ&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=7"
+        },
+        {
+          "name": "All Body Stalls",
+          "videoLink": "https://www.youtube.com/watch?v=8X_Kw_kdYH0&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=8"
+        },
+        {
+          "name": "Heel Touch",
+          "videoLink": "https://www.youtube.com/watch?v=jqzftLvrhjg&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=9"
+        },
+        {
+          "name": "Toe to Toe Lift",
+          "videoLink": "https://www.youtube.com/watch?v=mKCtmEqW1_Y&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=10"
+        },
+        {
+          "name": "Around the Leg Lift",
+          "videoLink": "https://www.youtube.com/watch?v=lgvZws8f37w&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=12"
+        },
+        {
+          "name": "Heel to Toe Lift",
+          "videoLink": "https://www.youtube.com/watch?v=kFo9mK9B4sQ&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=13"
+        },
+        {
+          "name": "HOW TO DO THE WALTZ",
+          "videoLink": "https://www.youtube.com/watch?v=kN10A2dp364&list=PLsRSijrCyTQendrnHIO7JDOvh5rDaqU7a&index=14"
+        },
+        {
+          "name": "One In Each",
+          "videoLink": "https://www.youtube.com/watch?v=BXkwvaJftPU&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=1"
+        },
+        {
+          "name": "Two In Each",
+          "videoLink": "https://www.youtube.com/watch?v=_IS4BfFDQbY&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=2"
+        },
+        {
+          "name": "Lateral Step",
+          "videoLink": "https://www.youtube.com/watch?v=1hGv2LAypeE&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=3"
+        },
+        {
+          "name": "Skier",
+          "videoLink": "https://www.youtube.com/watch?v=kPBQ70zzFtI&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=4"
+        },
+        {
+          "name": "Lateral Hops",
+          "videoLink": "https://www.youtube.com/watch?v=RuYLjQHQCkM&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=5"
+        },
+        {
+          "name": "Jab Step",
+          "videoLink": "https://www.youtube.com/watch?v=aNCZv1FqO1Q&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=6"
+        },
+        {
+          "name": "Typewriter",
+          "videoLink": "https://www.youtube.com/watch?v=mYAGtjkRZZs&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=7"
+        },
+        {
+          "name": "Backwards Typewriter",
+          "videoLink": "https://www.youtube.com/watch?v=dg6r4gA9x6M&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=8"
+        },
+        {
+          "name": "Karaoke",
+          "videoLink": "https://www.youtube.com/watch?v=vc2C3PY4Re8&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=9"
+        },
+        {
+          "name": "Karaoke Combo",
+          "videoLink": "https://www.youtube.com/watch?v=u657xTuTnkY&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=10"
+        },
+        {
+          "name": "2 Forward & 1 Back",
+          "videoLink": "https://www.youtube.com/watch?v=whSBbHlMRjw&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=11"
+        },
+        {
+          "name": "Lateral Double Step",
+          "videoLink": "https://www.youtube.com/watch?v=1nbMBoYr604&list=PLsRSijrCyTQel_Ekr0BVCuGhjGUaMDX84&index=12"
+        }
+      ];
+      starter.players[0].drillIds = starter.drills.map(d => d.id);
+      function freshStarter() {
+        return JSON.parse(JSON.stringify(starter));
+      }
+      function readSavedState() {
+        try {
+          return JSON.parse(localStorage.getItem(key) || "null");
+        } catch {
+          return null;
+        }
+      }
+      function writeSavedState() {
+        try {
+          localStorage.setItem(key, JSON.stringify(state));
+        } catch {
+          // The app should still work in the file preview if browser storage is blocked.
+        }
+      }
+      function clearSavedState() {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+          // Ignore blocked storage and reload the in-memory sample data.
+        }
+      }
+      function resetTracker() {
+        clearSavedState();
+        location.reload();
+      }
+      let state;
+      try {
+        state = readSavedState() || freshStarter();
+        normalizeState();
+        state.duration = state.duration || 60;
+        if (typeof state.seconds !== "number") state.seconds = state.duration;
+        state.drills.forEach(d => { if (d.count === undefined) d.count = ""; if (!Array.isArray(d.countHistory)) d.countHistory = []; if (!d.durationSeconds) d.durationSeconds = parseDuration(d.timer); });
+        if (!Array.isArray(state.sessionDrillIds) || !state.sessionDrillIds.length) state.sessionDrillIds = starter.players[0].drillIds.slice(0, 6);
+        state.pendingCountSave = Boolean(state.pendingCountSave);
+        state.resting = Boolean(state.resting);
+        if (typeof state.restSeconds !== "number") state.restSeconds = 30;
+        if (typeof state.restDuration !== "number") state.restDuration = 30;
+        mergeAllDrillsFromSheet();
+      } catch {
+        state = freshStarter();
+        normalizeState();
+      }
+      let tick;
+      let restTick;
+      let audioCtx;
+
+      function drillSeedKey(drill) {
+        const id = youtubeId(drill.videoLink || "");
+        return id ? `video:${id}` : `name:${String(drill.name || "").toLowerCase().replace(/\s+/g, " ").trim()}`;
+      }
+      function youtubeId(url) {
+        return String(url || "").match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/)?.[1] || "";
+      }
+      function normalizeState() {
+        if (!state || typeof state !== "object") state = freshStarter();
+        if (!Array.isArray(state.drills) || !state.drills.length) state.drills = freshStarter().drills;
+        if (!Array.isArray(state.players) || !state.players.length) state.players = freshStarter().players;
+        if (!Array.isArray(state.sessions)) state.sessions = [];
+        if (!["Home", "Players", "Drills", "Training Sessions", "Progress"].includes(state.page)) state.page = "Home";
+        state.players.forEach(player => {
+          if (!Array.isArray(player.drillIds)) player.drillIds = [];
+          if (!player.drillIds.length) player.drillIds = state.drills.map(drill => drill.id);
+          if (!player.photoDataUrl && player.id === "player-jordan") player.photoDataUrl = defaultPlayerAvatar;
+        });
+        if (!state.players.some(player => player.id === state.selectedPlayer)) state.selectedPlayer = state.players[0]?.id || "player-jordan";
+        if (!Array.isArray(state.sessionDrillIds)) state.sessionDrillIds = [];
+        state.sessionDrillIds = state.sessionDrillIds.filter(id => state.drills.some(drill => drill.id === id));
+        if (state.selectedVideoDrill && !state.drills.some(drill => drill.id === state.selectedVideoDrill)) state.selectedVideoDrill = state.sessionDrillIds[0] || "";
+      }
+      function mergeAllDrillsFromSheet() {
+        if (!Array.isArray(state.drills)) state.drills = [];
+        if (!Array.isArray(state.players)) state.players = [];
+        const existing = new Set(state.drills.map(drillSeedKey));
+        const usedIds = new Set(state.drills.map(d => d.id));
+        let added = 0;
+        allDrillSeeds.forEach((seed, index) => {
+          const key = drillSeedKey(seed);
+          if (existing.has(key)) return;
+          let id = `all-drill-${index + 1}`;
+          let n = 1;
+          while (usedIds.has(id)) id = `all-drill-${index + 1}-${n++}`;
+          usedIds.add(id);
+          const drill = { id, name: seed.name, videoLink: seed.videoLink, completed: false, rating: 1, timer: "1", durationSeconds: 60, notes: "Available drill from All Drills sheet.", count: "", countHistory: [] };
+          state.drills.push(drill);
+          state.players.forEach(p => {
+            if (!Array.isArray(p.drillIds)) p.drillIds = [];
+            if (!p.drillIds.includes(id)) p.drillIds.push(id);
+          });
+          existing.add(key);
+          added += 1;
+        });
+        if (added) save();
+      }
+
+      function save() { writeSavedState(); }
+      function setPage(page) {
+        state.page = page;
+        save();
+        render();
+        if (page === "Home") window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      function selectedPlayer() { return state.players.find(p => p.id === state.selectedPlayer) || state.players[0]; }
+      function playerDrills() { const p = selectedPlayer(); return p ? state.drills.filter(d => p.drillIds.includes(d.id)) : []; }
+      function sessionDrills() {
+        const all = playerDrills();
+        const byId = new Map(all.map(drill => [drill.id, drill]));
+        return (state.sessionDrillIds || []).map(id => byId.get(id)).filter(Boolean);
+      }
+      function progress() { const d = playerDrills(); return d.length ? Math.round(d.filter(x => x.completed).length / d.length * 100) : 0; }
+      function fmt(s) { return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
+      function fmtHms(s) { return String(Math.floor(s/3600)).padStart(2,"0") + ":" + String(Math.floor((s%3600)/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
+      function parseDuration(value) { const text = String(value || "").toLowerCase(); if (text.includes("30")) return 30; const num = Number(text.match(/\d+/)?.[0] || 60); return Math.max(1, num) * (text.includes("sec") ? 1 : 60); }
+      function setActiveDrill(id, keepScroll = false) {
+        state.selectedVideoDrill = id;
+        const d = state.drills.find(x => x.id === id);
+        if (d?.durationSeconds) chooseDuration(Number(d.durationSeconds), keepScroll);
+        else { save(); keepScroll ? renderPreservingPosition() : render(); }
+      }
+      function nextPlaylistDrillId() {
+        const ids = state.sessionDrillIds || [];
+        if (!ids.length) return "";
+        const current = selectedVideoDrill()?.id;
+        const index = ids.indexOf(current);
+        if (index < 0) return ids[0] || "";
+        return ids[index + 1] || "";
+      }
+      function hasNextPlaylistDrill() { return Boolean(nextPlaylistDrillId()); }
+      function advancePlaylist() {
+        const nextId = nextPlaylistDrillId();
+        if (nextId) setActiveDrill(nextId);
+      }
+      function startPlaylist(event) {
+        event?.preventDefault();
+        const first = sessionDrills()[0] || selectedVideoDrill() || playerDrills().find(x => x.videoLink);
+        if (first) {
+          if (!state.sessionDrillIds.includes(first.id)) state.sessionDrillIds = [first.id, ...(state.sessionDrillIds || [])];
+          state.selectedVideoDrill = first.id;
+          state.duration = Number(first.durationSeconds || 60);
+          state.seconds = state.duration;
+          state.pendingCountSave = false;
+          state.resting = false;
+          state.running = true;
+          save();
+          render();
+          playVideoFromTap(event);
+          openCompanionVideoIfNeeded(first.videoLink);
+          timer(true, true, true);
+        }
+      }
+      function stars(r) { return `<span class="stars">${Array.from({length:5},(_,i)=>i<Number(r||0)?"★":`<span class="off">☆</span>`).join("")}</span>`; }
+      function videoUrl() { return playerDrills().find(x => x.videoLink)?.videoLink || state.drills.find(x => x.videoLink)?.videoLink || "https://www.youtube.com/watch?v=x3ufIEsdwYo"; }
+      function selectedVideoDrill() {
+        const drills = sessionDrills().length ? sessionDrills() : playerDrills();
+        return drills.find(x => x.id === state.selectedVideoDrill) || drills.find(x => x.videoLink) || state.drills.find(x => x.videoLink);
+      }
+      function videoId(url) { return (url || "").match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/)?.[1] || ""; }
+      function embed(url, play = false) {
+        const id = videoId(url);
+        if (!id) return "";
+        const params = new URLSearchParams({
+          playsinline: "1",
+          controls: "1",
+          rel: "0",
+          enablejsapi: "1",
+          playlist: id
+        });
+        if (location.protocol === "http:" || location.protocol === "https:") {
+          params.set("origin", location.origin);
+        }
+        if (play) {
+          params.set("autoplay", "1");
+          params.set("mute", "1");
+          params.set("loop", "1");
+        }
+        const host = "www.youtube.com";
+        return `https://${host}/embed/${id}?${params.toString()}`;
+      }
+      function videoMarkup(url) {
+        const id = videoId(url);
+        if (!id) return `<div class="video"></div>`;
+        const label = selectedVideoDrill()?.name || "YouTube drill video";
+        const fallback = `<a class="video-fallback ${state.running ? "playing" : ""}" href="${esc(url)}" target="_blank" onclick="playVideoFromTap(event);openCompanionVideoIfNeeded(this.href)"><span><span class="play-dot">▶</span>${state.running ? "Open video if this display blocks YouTube" : "Tap to play video"}</span></a>`;
+        return `<div class="video-wrap ${state.running ? "playing" : ""}" id="videoWrap"><iframe id="tutorialVideo" src="${embed(url, state.running)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen onload="this.closest('.video-wrap')?.classList.add('iframe-loaded')"></iframe><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><div class="video-title">${esc(label)}</div>${fallback}</div>`;
+      }
+      function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c])); }
+
+      function timer(on, skipRender = false, skipVideoStart = false) {
+        state.running = on;
+        clearInterval(tick);
+        clearInterval(restTick);
+        if (on && state.seconds <= 0) state.seconds = state.duration;
+        if (on) state.resting = false;
+        if (on) unlockAudio();
+        if (on) tick = setInterval(() => {
+          state.seconds = Math.max(0, state.seconds - 1);
+          if (state.seconds === 0) {
+            state.running = false;
+            clearInterval(tick);
+            stopVideoNow();
+            playTimerDoneSound();
+            if (hasNextPlaylistDrill()) startRestTimer();
+            else completePlaylist();
+          }
+          else renderHomeTimer();
+          save();
+        }, 1000);
+        save();
+        if (!skipRender) render();
+        if (on && !skipVideoStart) startVideoNow();
+        else if (!on) stopVideoNow();
+      }
+      function chooseDuration(seconds, keepScroll = false) { state.duration = seconds; state.seconds = seconds; state.running = false; state.resting = false; clearInterval(tick); clearInterval(restTick); stopVideoNow(); save(); keepScroll ? renderPreservingPosition() : render(); }
+      function startRestTimer() {
+        state.resting = true;
+        state.restSeconds = state.restDuration;
+        save();
+        render();
+        clearInterval(restTick);
+        restTick = setInterval(() => {
+          state.restSeconds = Math.max(0, state.restSeconds - 1);
+          if (state.restSeconds === 0) {
+            clearInterval(restTick);
+            finishRestAndAdvance();
+          } else {
+            save();
+            renderRestOverlay();
+          }
+        }, 1000);
+      }
+      function finishRestAndAdvance() {
+        saveCountOnly();
+        state.resting = false;
+        if (hasNextPlaylistDrill()) {
+          advancePlaylist();
+          playVideoFromTap();
+          timer(true, true, true);
+        } else {
+          completePlaylist();
+        }
+      }
+      function completePlaylist() {
+        saveCountOnly();
+        state.running = false;
+        state.resting = false;
+        state.pendingCountSave = false;
+        state.seconds = 0;
+        clearInterval(tick);
+        clearInterval(restTick);
+        stopVideoNow();
+        save();
+        render();
+      }
+      function restOverlayMarkup() {
+        const d = selectedVideoDrill();
+        return `<div style="position:fixed;inset:0;z-index:50;background:rgba(10,20,14,.45);display:grid;place-items:center;padding:20px"><div class="card" style="max-width:390px;width:100%;text-align:center"><div class="panel-title">${state.restDuration} Second Rest</div><div class="timer-big" style="font-size:54px;margin:16px 0">${fmtHms(state.restSeconds)}</div><label style="text-align:left;margin:0 0 14px;font-size:15px">Reps completed for ${esc(d?.name || "drill")}<input type="number" min="0" inputmode="numeric" value="${esc(d?.count || "")}" oninput="setSelectedCount(this.value)" placeholder="Type number of reps" autofocus style="font-size:22px;font-weight:900;text-align:center;padding:12px"></label><p class="muted">Type the reps now. The next playlist video starts when rest ends.</p><button class="btn primary" onclick="clearInterval(restTick);finishRestAndAdvance()">Save Reps & Continue</button></div></div>`;
+      }
+      function renderRestOverlay() {
+        const el = document.getElementById("restOverlay");
+        if (el) el.innerHTML = restOverlayMarkup();
+      }
+      function startVideoNow() {
+        const url = selectedVideoDrill()?.videoLink || videoUrl();
+        const id = videoId(url);
+        if (!id) return;
+        mountVideoIframe(url, true);
+        commandIframePlay();
+        setTimeout(commandIframePlay, 250);
+        setTimeout(commandIframePlay, 800);
+        setTimeout(commandIframePlay, 1500);
+        setTimeout(commandIframePlay, 3000);
+      }
+      function playVideoFromTap(event) {
+        event?.preventDefault();
+        const url = selectedVideoDrill()?.videoLink || videoUrl();
+        const wrap = document.getElementById("videoWrap");
+        const fallback = wrap?.querySelector(".video-fallback");
+        mountVideoIframe(url, true);
+        wrap?.classList.add("playing");
+        fallback?.classList.add("playing");
+        commandIframePlay();
+        setTimeout(commandIframePlay, 100);
+        setTimeout(commandIframePlay, 500);
+        setTimeout(commandIframePlay, 1000);
+        setTimeout(commandIframePlay, 2500);
+      }
+      function isInAppPreviewBrowser() {
+        const ua = (navigator.userAgent || "").toLowerCase();
+        return location.protocol === "file:" || ua.includes("electron") || ua.includes("codex") || ua.includes("openai") || window.top !== window.self;
+      }
+      function openCompanionVideoIfNeeded(url) {
+        if (!url || !isInAppPreviewBrowser()) return;
+        document.getElementById("videoWrap")?.classList.add("blocked-preview");
+        window.open(url, "coachTrackerVideoPlayer");
+      }
+      function mountVideoIframe(url, play) {
+        const wrap = document.getElementById("videoWrap");
+        if (!wrap) return null;
+        const old = document.getElementById("tutorialVideo");
+        const nextSrc = embed(url, play);
+        if (old?.src === nextSrc) {
+          wrap.classList.add("playing");
+          commandIframePlay();
+          return old;
+        }
+        if (old) old.remove();
+        const iframe = document.createElement("iframe");
+        iframe.id = "tutorialVideo";
+        iframe.title = "Tutorial video";
+        iframe.src = nextSrc;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        iframe.allowFullscreen = true;
+        iframe.onload = () => {
+          wrap.classList.add("iframe-loaded");
+          commandIframePlay();
+          setTimeout(commandIframePlay, 200);
+        };
+        wrap.prepend(iframe);
+        wrap.classList.add("playing");
+        return iframe;
+      }
+      function stopVideoNow() {
+        commandIframePause();
+      }
+      function commandIframePlay() {
+        const iframe = document.getElementById("tutorialVideo");
+        try {
+          iframe?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "mute", args: [] }), "*");
+          iframe?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+        } catch {}
+      }
+      function commandIframePause() {
+        const iframe = document.getElementById("tutorialVideo");
+        try { iframe?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "pauseVideo", args: [] }), "*"); } catch {}
+      }
+      function ensureYouTubeApi(callback) {
+        if (window.YT?.Player) {
+          callback();
+          return;
+        }
+        const previous = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          if (typeof previous === "function") previous();
+          callback();
+        };
+        if (!document.getElementById("youtube-iframe-api")) {
+          const script = document.createElement("script");
+          script.id = "youtube-iframe-api";
+          script.src = "https://www.youtube.com/iframe_api";
+          document.head.appendChild(script);
+        }
+      }
+      function unlockAudio() {
+        try {
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+        } catch {}
+      }
+      function playTimerDoneSound() {
+        try {
+          unlockAudio();
+          const now = audioCtx.currentTime;
+          [0, 0.18, 0.36].forEach((offset) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, now + offset);
+            gain.gain.setValueAtTime(0.0001, now + offset);
+            gain.gain.exponentialRampToValueAtTime(0.75, now + offset + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(now + offset);
+            osc.stop(now + offset + 0.2);
+          });
+        } catch {}
+      }
+
+      function renderNav() {
+        const pages = ["Home", "Players", "Drills", "Training Sessions", "Progress"];
+        document.getElementById("nav").innerHTML = pages.map(p => `<button class="${state.page === p ? "active" : ""}" onclick="setPage('${p}')">${p}</button>`).join("");
+      }
+
+      function renderHome() {
+        const p = selectedPlayer();
+        const d = playerDrills();
+        const done = d.filter(x => x.completed).length;
+        const activeVideoDrill = selectedVideoDrill();
+        const video = activeVideoDrill?.videoLink || videoUrl();
+        const playerPhoto = p.photoDataUrl ? `<img src="${esc(p.photoDataUrl)}" alt="${esc(p.name)} photo">` : `<div class="shirt">10</div>`;
+        const playerPhotoBox = p.photoDataUrl ? `<img src="${esc(p.photoDataUrl)}" alt="${esc(p.name)} photo">` : `Add<br>player<br>photo`;
+        return `<section class="profile">
+          <div class="jersey">${playerPhoto}</div>
+          <div>
+            <h2>${esc(p.name)}</h2>
+            <div class="meta-line"><span>● Position: Midfielder</span><span>▣ Age: 6</span><span>◒ Foot: Right</span></div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="panel-head"><div class="panel-title">Tutorial Video</div></div>
+          <div class="video-controls">
+            <label class="player-photo-card">Player photo
+              <div class="player-photo-box">${playerPhotoBox}</div>
+              <input type="file" accept="image/*" onchange="uploadPlayerPhoto(this.files && this.files[0])">
+            </label>
+            <div class="inline-timer" id="timerCard" style="grid-column:2/-1">${timerMarkup()}</div>
+            <label style="grid-column:2/-1">Drill video
+              <select onchange="setActiveDrill(this.value)">
+                ${(sessionDrills().length ? sessionDrills() : d).filter(x => x.videoLink).map(x => `<option value="${x.id}" ${activeVideoDrill?.id===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}
+              </select>
+            </label>
+            <div class="video-stage">${videoMarkup(video)}</div>
+            <div style="grid-column:1/-1">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px"><div class="muted" style="font-weight:800">Training playlist</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn light" onclick="clearPlaylist()">Clear All</button><button class="btn primary" onclick="startPlaylist(event)">Start Playlist</button></div></div>
+              <div class="playlist">${sessionDrills().map((drill, index) => `<div class="playlist-row ${activeVideoDrill?.id===drill.id?"active":""}"><span class="order">${index + 1}</span><button class="btn light" onclick="setActiveDrill('${drill.id}')" style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(drill.name)}</button><label style="font-size:11px">Min<input type="number" min="1" value="${Math.round((drill.durationSeconds || 60) / 60)}" onchange="setDrillDuration('${drill.id}', this.value)" style="padding:4px 6px"></label><span><button class="btn light" onclick="movePlaylist('${drill.id}', -1)" title="Move up">↑</button> <button class="btn light" onclick="movePlaylist('${drill.id}', 1)" title="Move down">↓</button></span><button class="btn light remove" onclick="removeFromPlaylist('${drill.id}')" title="Remove from playlist">Remove</button></div>`).join("") || `<div class="muted">Select drills from the player or drill pages.</div>`}</div>
+            </div>
+          </div>
+        </section>
+        <section class="card" style="margin-top:18px">
+          <div class="panel-head">
+            <div><div class="panel-title">Drills</div><div class="muted">Select drills here to add them to the playlist.</div></div>
+            <button class="btn light" onclick="setPage('Drills')">+ Add Drill</button>
+          </div>
+          <label style="margin-bottom:10px">Search drills
+            <input id="drillSearch" type="search" placeholder="Type a drill name..." oninput="filterDrillRows(this.value)">
+          </label>
+          <div class="table-scroll drill-selector"><table class="drills-table"><thead><tr><th>#</th><th>Playlist</th><th>Drill</th><th>Time</th><th>Count</th><th>Video</th></tr></thead><tbody>
+          ${d.map((x,i) => `<tr data-drill-name="${esc(x.name.toLowerCase())}"><td><strong>${i+1}</strong></td><td><label class="select-chip"><input type="checkbox" ${state.sessionDrillIds.includes(x.id)?"checked":""} onchange="toggleSessionDrill('${x.id}',this.checked)"> Add</label></td><td><button class="drill-name-btn" onclick="setActiveDrill('${x.id}', true)">${esc(x.name)}</button></td><td><input style="width:76px" value="${esc(x.timer || "1")}" onchange="editDrill('${x.id}','timer',this.value); state.drills.find(d=>d.id==='${x.id}').durationSeconds=parseDuration(this.value); save(); renderPreservingPosition();"></td><td><input style="width:70px" placeholder="Count" value="${esc(x.count || "")}" onchange="editDrill('${x.id}','count',this.value)"></td><td>${x.videoLink ? `<a class="btn light" href="${esc(x.videoLink)}" target="_blank">Video</a>` : ""}</td></tr>`).join("")}
+          </tbody></table></div>
+          <div class="muted" style="padding-top:10px">${d.length} drills available from Jordan 2.0 and the All Drills sheet.</div>
+        </section>
+        <section class="card" style="margin-top:18px">
+          <div class="notes-rating">
+            <div><div class="panel-title">Session Notes</div><textarea id="homeNotes" maxlength="300" placeholder="Add your notes here..."></textarea><div class="muted" style="text-align:right">0 / 300</div></div>
+            <div><div class="panel-title">Overall Session Rating</div><div class="session-stars">☆ ☆ ☆ ☆ ☆</div><button class="btn primary" style="width:100%" onclick="saveSession()">Save Session</button></div>
+          </div>
+        </section>`;
+      }
+
+      function timerMarkup() {
+        const drills = sessionDrills();
+        const total = drills.length;
+        const done = drills.filter(x => x.completed).length;
+        const pct = total ? Math.round(done / total * 100) : 0;
+        const activeDrill = selectedVideoDrill();
+        const lastReps = latestSavedCount(activeDrill);
+        const details = lastReps !== "" ? `Reps: ${esc(lastReps)}` : total && done >= total && !state.running && !state.resting ? "Complete" : state.running ? "Running" : state.resting ? "Rest" : "Press Start";
+        const timePct = state.duration ? Math.max(0, Math.min(100, Math.round((state.seconds / state.duration) * 100))) : 0;
+        return `<div class="panel-title">Training Timer</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn ${state.duration===60?"primary":"light"}" onclick="chooseDuration(60)">1:00</button>
+          <button class="btn ${state.duration===45?"primary":"light"}" onclick="chooseDuration(45)">0:45</button>
+          <button class="btn ${state.duration===30?"primary":"light"}" onclick="chooseDuration(30)">0:30</button>
+        </div>
+        <label style="max-width:150px;margin-top:8px;font-size:12px">Rest seconds
+          <input type="number" min="15" max="30" value="${esc(state.restDuration)}" onchange="setRestDuration(this.value)" style="padding:6px 8px">
+        </label>
+        <div class="timer-big">${fmtHms(state.seconds)}</div>
+        <div class="countdown-bar" aria-label="Countdown time left"><span style="width:${timePct}%"></span></div>
+        <div class="buttons">
+          <button class="btn primary" onclick="timer(true)">Start</button>
+          <button class="btn light" onclick="timer(false)">Pause</button><button class="btn light" onclick="chooseDuration(state.duration)">Reset</button>
+        </div>
+        ${state.pendingCountSave ? `<button class="btn primary" style="width:100%;margin-top:8px" onclick="saveSelectedCountForSession()">End Count & Save</button>` : ""}
+        <div class="timer-summary">
+          <div><span>Completed</span><strong>${done}/${total}</strong></div>
+          <div><span>Progress</span><strong>${pct}%</strong></div>
+          <div><span>Details</span><strong style="font-size:12px">${details}</strong></div>
+          <div class="mini-progress"><div class="smallbar" style="height:7px;margin-top:2px"><span style="width:${pct}%"></span></div></div>
+        </div>
+        <div class="count-history">${(selectedVideoDrill()?.countHistory || []).slice(-3).reverse().map(entry => `<span>${esc(entry.date)}: ${esc(entry.count)}</span>`).join("")}</div>`;
+      }
+      function latestCountValue(drill) {
+        if (!drill) return "";
+        if (drill.count !== undefined && drill.count !== null && String(drill.count) !== "") return String(drill.count);
+        const history = Array.isArray(drill.countHistory) ? drill.countHistory : [];
+        const latest = history.at(-1)?.count;
+        return latest === undefined || latest === null ? "" : String(latest);
+      }
+      function latestSavedCount(drill) {
+        if (!drill) return "";
+        const history = Array.isArray(drill.countHistory) ? drill.countHistory : [];
+        const latest = history.at(-1)?.count;
+        return latest === undefined || latest === null ? "" : String(latest);
+      }
+      function renderHomeTimer() { const el = document.getElementById("timerCard"); if (el) el.innerHTML = timerMarkup(); }
+      function avg(d) { return d.length ? (d.reduce((s,x)=>s+Number(x.rating||0),0)/d.length).toFixed(1) : "0"; }
+      function filterDrillRows(value) {
+        const query = String(value || "").trim().toLowerCase();
+        document.querySelectorAll(".drill-selector tbody tr").forEach(row => {
+          row.style.display = !query || row.dataset.drillName.includes(query) ? "" : "none";
+        });
+      }
+      function renderPreservingPosition() {
+        const top = window.scrollY;
+        const selectorTop = document.querySelector(".drill-selector")?.scrollTop || 0;
+        const search = document.getElementById("drillSearch")?.value || "";
+        render();
+        requestAnimationFrame(() => {
+          window.scrollTo(0, top);
+          const input = document.getElementById("drillSearch");
+          if (input) input.value = search;
+          if (search) filterDrillRows(search);
+          const selector = document.querySelector(".drill-selector");
+          if (selector) selector.scrollTop = selectorTop;
+        });
+      }
+      function toggleDrill(id, checked) { const d = state.drills.find(x => x.id === id); if (d) d.completed = checked; save(); render(); }
+      function saveSession() { state.sessions.unshift({ id: crypto.randomUUID(), playerId: selectedPlayer().id, date: new Date().toISOString().slice(0,10), minutes: Math.max(1, Math.round(state.seconds/60)), completedDrills: playerDrills().filter(d=>d.completed).length, notes: "Saved from home training timer." }); save(); render(); }
+
+      function renderPlayers() {
+        return `<div class="page-title"><h2>Players</h2><p class="muted">Add, edit, and delete players.</p></div>
+          <div class="form card"><label>Name<input id="newPlayerName"></label><label>Notes<input id="newPlayerNotes"></label><button class="btn primary" onclick="addPlayer()">Add Player</button></div>
+          <div class="grid two">${state.players.map(p => `<section class="card"><h3>${esc(p.name)}</h3><label>Name<input value="${esc(p.name)}" onchange="editPlayer('${p.id}','name',this.value)"></label><label>Notes<textarea onchange="editPlayer('${p.id}','notes',this.value)">${esc(p.notes)}</textarea></label><button class="btn danger" onclick="deletePlayer('${p.id}')">Delete</button></section>`).join("")}</div>`;
+      }
+      function addPlayer() { const n = document.getElementById("newPlayerName").value.trim(); if (!n) return; state.players.push({ id: crypto.randomUUID(), name: n, notes: document.getElementById("newPlayerNotes").value.trim(), drillIds: [] }); save(); render(); }
+      function editPlayer(id, field, value) { const p = state.players.find(x => x.id === id); if (p) p[field] = value; save(); }
+      function deletePlayer(id) { state.players = state.players.filter(p => p.id !== id); state.selectedPlayer = state.players[0]?.id || ""; save(); render(); }
+      function uploadPlayerPhoto(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const p = selectedPlayer();
+          if (!p) return;
+          p.photoDataUrl = String(reader.result || "");
+          save();
+          render();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function renderDrills() {
+        return `<div class="page-title"><h2>Drills</h2><p class="muted">Add, edit, delete, complete, and rate drills.</p></div>
+          <div class="form card"><label>Name<input id="newDrillName"></label><label>Video link<input id="newDrillVideo"></label><label>Notes<input id="newDrillNotes"></label><button class="btn primary" onclick="addDrill()">Add Drill</button></div>
+          <section class="card compact-list">${state.drills.map(d => `<div class="row"><input type="checkbox" ${d.completed?"checked":""} onchange="toggleDrill('${d.id}',this.checked)"><div><strong>${esc(d.name)}</strong><div class="muted">${esc(d.notes)}</div></div><span class="meta">${esc(d.timer)} min</span><input style="width:58px" type="number" min="1" max="5" value="${d.rating}" onchange="rateDrill('${d.id}',this.value)"><div class="actions">${d.videoLink ? `<a class="btn light" href="${esc(d.videoLink)}" target="_blank">Video</a>` : ""}<button class="btn danger" onclick="deleteDrill('${d.id}')">Delete</button></div></div>`).join("")}</section>`;
+      }
+      function addDrill() { const n = document.getElementById("newDrillName").value.trim(); if (!n) return; const d = { id: crypto.randomUUID(), name: n, videoLink: document.getElementById("newDrillVideo").value.trim(), notes: document.getElementById("newDrillNotes").value.trim(), completed: false, rating: 3, timer: "1" }; state.drills.unshift(d); state.players.forEach(p => p.drillIds.push(d.id)); save(); render(); }
+      function rateDrill(id, value) { const d = state.drills.find(x => x.id === id); if (d) d.rating = Number(value); save(); }
+      function editDrill(id, field, value) { const d = state.drills.find(x => x.id === id); if (d) d[field] = value; save(); }
+      function setVideoLink(id, value) { const d = state.drills.find(x => x.id === id) || selectedVideoDrill(); if (d) { d.videoLink = value; state.selectedVideoDrill = d.id; } save(); render(); }
+      function setSelectedCount(value) {
+        const d = selectedVideoDrill();
+        if (d) {
+          d.count = String(value);
+        }
+        save();
+        renderHomeTimer();
+      }
+      function setRestDuration(value) {
+        state.restDuration = Math.min(30, Math.max(15, Number(value || 30)));
+        if (!state.resting) state.restSeconds = state.restDuration;
+        save();
+        renderHomeTimer();
+      }
+      function saveSelectedCountForSession() {
+        saveCountOnly();
+        state.pendingCountSave = false;
+        save();
+        advancePlaylist();
+      }
+      function saveCountOnly() {
+        const d = selectedVideoDrill();
+        const number = Number(d?.count);
+        if (d && Number.isFinite(number)) {
+          d.countHistory = Array.isArray(d.countHistory) ? d.countHistory : [];
+          d.countHistory.push({ id: crypto.randomUUID(), date: new Date().toISOString().slice(0, 10), count: number, sessionId: state.sessions[0]?.id || "current-session" });
+          d.completed = true;
+        }
+      }
+      function toggleSessionDrill(id, checked) {
+        state.sessionDrillIds = checked ? [...new Set([...(state.sessionDrillIds || []), id])] : (state.sessionDrillIds || []).filter(x => x !== id);
+        if (!state.sessionDrillIds.includes(state.selectedVideoDrill)) state.selectedVideoDrill = state.sessionDrillIds[0] || "";
+        save();
+        renderPreservingPosition();
+      }
+      function removeFromPlaylist(id) {
+        toggleSessionDrill(id, false);
+      }
+      function clearPlaylist() {
+        state.drills.forEach(drill => {
+          drill.completed = false;
+          drill.count = "";
+          drill.countHistory = [];
+        });
+        state.sessionDrillIds = [];
+        state.selectedVideoDrill = "";
+        state.running = false;
+        state.pendingCountSave = false;
+        state.resting = false;
+        clearInterval(tick);
+        clearInterval(restTick);
+        stopVideoNow();
+        save();
+        renderPreservingPosition();
+      }
+      function setDrillDuration(id, minutes) {
+        const d = state.drills.find(x => x.id === id);
+        const seconds = Math.max(1, Number(minutes || 1)) * 60;
+        if (d) {
+          d.durationSeconds = seconds;
+          d.timer = String(minutes);
+          if (selectedVideoDrill()?.id === id) chooseDuration(seconds);
+          else { save(); render(); }
+        }
+      }
+      function movePlaylist(id, direction) {
+        const ids = [...(state.sessionDrillIds || [])];
+        const index = ids.indexOf(id);
+        const nextIndex = index + direction;
+        if (index < 0 || nextIndex < 0 || nextIndex >= ids.length) return;
+        [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
+        state.sessionDrillIds = ids;
+        save();
+        render();
+      }
+      function deleteDrill(id) { state.drills = state.drills.filter(d => d.id !== id); state.players.forEach(p => p.drillIds = p.drillIds.filter(x => x !== id)); save(); render(); }
+
+      function renderSessions() {
+        return `<div class="page-title"><h2>Training Sessions</h2><p class="muted">Log training time and coach notes.</p></div>
+          <div class="form card"><select id="sessionPlayer">${state.players.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><input id="sessionDate" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="sessionMinutes" type="number" value="30"><input id="sessionDone" type="number" value="0"><textarea id="sessionNotes" placeholder="Session notes"></textarea><button class="btn primary" onclick="addSession()">Save Session</button></div>
+          <div class="grid">${state.sessions.map(s => `<section class="card"><div class="top"><strong>${esc(state.players.find(p=>p.id===s.playerId)?.name || "Player")}</strong><span class="muted">${esc(s.date)}</span></div><p>${s.minutes} minutes, ${s.completedDrills} completed drills</p><p class="muted">${esc(s.notes)}</p></section>`).join("")}</div>`;
+      }
+      function addSession() { state.sessions.unshift({ id: crypto.randomUUID(), playerId: sessionPlayer.value, date: sessionDate.value, minutes: Number(sessionMinutes.value), completedDrills: Number(sessionDone.value), notes: sessionNotes.value }); save(); render(); }
+
+      function renderProgress() {
+        return `<div class="page-title"><h2>Progress</h2><p class="muted">Quick progress view by player and drill count.</p></div><div class="grid two">${state.players.map(p => { const d = state.drills.filter(x => p.drillIds.includes(x.id)); const pct = d.length ? Math.round(d.filter(x => x.completed).length / d.length * 100) : 0; const mins = state.sessions.filter(s => s.playerId===p.id).reduce((a,s)=>a+s.minutes,0); return `<section class="card"><h3>${esc(p.name)}</h3><div class="progressbar"><span style="width:${pct}%"></span></div><p>${pct}% complete</p><p class="muted">${mins} total training minutes</p><div style="margin-top:14px">${d.filter(x => (x.countHistory||[]).length).slice(0,8).map(x => `<div style="display:flex;justify-content:space-between;border-top:1px solid #edf1ee;padding:8px 0"><span>${esc(x.name)}</span><strong>${esc((x.countHistory||[]).at(-1)?.count ?? "")}</strong></div>`).join("")}</div></section>`; }).join("")}</div><button class="btn light" style="margin-top:18px" onclick="resetTracker()">Reset to Excel sample data</button>`;
+      }
+
+      function render() {
+        try {
+          normalizeState();
+          renderNav();
+          const pageHtml = state.page === "Home" ? renderHome() : state.page === "Players" ? renderPlayers() : state.page === "Drills" ? renderDrills() : state.page === "Training Sessions" ? renderSessions() : renderProgress();
+          document.getElementById("app").innerHTML = `${pageHtml}<div id="restOverlay">${state.resting ? restOverlayMarkup() : ""}</div>`;
+        } catch (error) {
+          console.error(error);
+          document.getElementById("app").innerHTML = `<section class="card"><div class="panel-title">Home screen needs a refresh</div><p class="muted" style="margin:12px 0">Your saved browser data was out of date. Tap the button below to reload the tracker with the Excel drills.</p><button class="btn primary" onclick="resetTracker()">Reload tracker</button></section>`;
+        }
+      }
+      render();
+      if (state.running) timer(true);
+    </script>
+  </body>
+</html>
