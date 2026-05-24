@@ -456,6 +456,7 @@ function HomePage(props: {
             <span>Position: Midfielder</span>
             <span>Age: 6</span>
             <span>Foot: Right</span>
+          </div>
         </div>
       </section>
 
