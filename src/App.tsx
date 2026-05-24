@@ -438,13 +438,6 @@ function HomePage(props: {
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
-  const uploadPlayerPhoto = (file?: File) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => props.onUpdatePlayerPhoto(String(reader.result || ""));
-    reader.readAsDataURL(file);
-  };
-
   return (
     <div className="space-y-5">
       <section className="flex items-center gap-6">
@@ -470,19 +463,8 @@ function HomePage(props: {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-black uppercase text-field">Tutorial Video</h3>
         </div>
-        <div className="mb-4 grid items-start gap-3 md:grid-cols-[300px_0.8fr_1.2fr]">
-          <label className="grid gap-1 text-sm font-bold text-slate-700 md:row-span-2">
-            Player photo
-            <div className="grid aspect-square cursor-pointer place-items-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-xs font-black text-slate-500">
-              {props.player.photoDataUrl ? (
-                <img src={props.player.photoDataUrl} alt={`${props.player.name} photo`} className="h-full w-full object-cover" />
-              ) : (
-                <span>Add<br />player<br />photo</span>
-              )}
-            </div>
-            <input type="file" accept="image/*" onChange={(event) => uploadPlayerPhoto(event.target.files?.[0])} className="sr-only" />
-          </label>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+        <div className="mb-4 grid items-start gap-3 md:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
             <TimerPanel
               seconds={props.seconds}
               running={props.running}
@@ -503,7 +485,7 @@ function HomePage(props: {
               onSaveCountForSession={props.onSaveCountForSession}
             />
           </div>
-          <label className="grid gap-1 text-sm font-bold text-slate-700 md:col-span-2 md:col-start-2">
+          <label className="grid gap-1 text-sm font-bold text-slate-700">
             Drill video
             <select
               value={videoDrill?.id || ""}
@@ -525,7 +507,7 @@ function HomePage(props: {
               ))}
             </select>
           </label>
-          <div className="w-full justify-self-center md:col-span-3 md:max-w-[820px]">
+          <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
           </div>
           <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
@@ -689,15 +671,6 @@ function HomePage(props: {
         <div className="pt-3 text-sm text-slate-500">{visibleDrills.length} of {props.drills.length} drills shown from Jordan 2.0 and the All Drills sheet.</div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
-        <div>
-            <h3 className="text-xl font-black uppercase text-field">Overall Session Rating</h3>
-            <div className="my-5 text-5xl tracking-widest text-slate-400">☆ ☆ ☆ ☆ ☆</div>
-            <button onClick={props.onSaveSession} className="focus-ring w-full rounded-md bg-blue-700 px-4 py-3 font-bold uppercase text-white hover:bg-blue-800">
-              Save Session
-            </button>
-        </div>
-      </section>
     </div>
   );
 }

@@ -1109,7 +1109,6 @@
         const activeVideoDrill = selectedVideoDrill();
         const video = activeVideoDrill?.videoLink || videoUrl();
         const playerPhoto = p.photoDataUrl ? `<img src="${esc(p.photoDataUrl)}" alt="${esc(p.name)} photo">` : `<div class="shirt">10</div>`;
-        const playerPhotoBox = p.photoDataUrl ? `<img src="${esc(p.photoDataUrl)}" alt="${esc(p.name)} photo">` : `Add<br>player<br>photo`;
         return `<section class="profile">
           <div class="jersey">${playerPhoto}</div>
           <div>
@@ -1120,12 +1119,8 @@
         <section class="card">
           <div class="panel-head"><div class="panel-title">Tutorial Video</div></div>
           <div class="video-controls">
-            <label class="player-photo-card">Player photo
-              <div class="player-photo-box">${playerPhotoBox}</div>
-              <input type="file" accept="image/*" onchange="uploadPlayerPhoto(this.files && this.files[0])">
-            </label>
-            <div class="inline-timer" id="timerCard" style="grid-column:2/-1">${timerMarkup()}</div>
-            <label style="grid-column:2/-1">Drill video
+            <div class="inline-timer" id="timerCard">${timerMarkup()}</div>
+            <label>Drill video
               <select onchange="setActiveDrill(this.value)">
                 ${(sessionDrills().length ? sessionDrills() : d).filter(x => x.videoLink).map(x => `<option value="${x.id}" ${activeVideoDrill?.id===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}
               </select>
@@ -1150,11 +1145,6 @@
           ${d.map((x,i) => `<tr data-drill-name="${esc(x.name.toLowerCase())}"><td><strong>${i+1}</strong></td><td><label class="select-chip"><input type="checkbox" ${state.sessionDrillIds.includes(x.id)?"checked":""} onchange="toggleSessionDrill('${x.id}',this.checked)"> Add</label></td><td><button class="drill-name-btn" onclick="setActiveDrill('${x.id}', true)">${esc(x.name)}</button></td><td><input style="width:76px" value="${esc(x.timer || "1")}" onchange="editDrill('${x.id}','timer',this.value); state.drills.find(d=>d.id==='${x.id}').durationSeconds=parseDuration(this.value); save(); renderPreservingPosition();"></td><td><input style="width:70px" placeholder="Count" value="${esc(x.count || "")}" onchange="editDrill('${x.id}','count',this.value)"></td><td>${x.videoLink ? `<a class="btn light" href="${esc(x.videoLink)}" target="_blank">Video</a>` : ""}</td></tr>`).join("")}
           </tbody></table></div>
           <div class="muted" style="padding-top:10px">${d.length} drills available from Jordan 2.0 and the All Drills sheet.</div>
-        </section>
-        <section class="card" style="margin-top:18px">
-          <div>
-            <div><div class="panel-title">Overall Session Rating</div><div class="session-stars">☆ ☆ ☆ ☆ ☆</div><button class="btn primary" style="width:100%" onclick="saveSession()">Save Session</button></div>
-          </div>
         </section>`;
       }
 
