@@ -513,9 +513,11 @@ function HomePage(props: {
               <div className="mb-2 inline-flex rounded-md bg-field px-3 py-1 text-xs font-black uppercase text-white">
                 Instructions
               </div>
-              <p className="text-2xl font-black leading-tight text-slate-900">
-                Choose your drills, add them to your playlist, and press Start when you're ready to train.
-              </p>
+              <ol className="list-decimal space-y-1 pl-5 text-2xl font-black leading-tight text-slate-900">
+                <li>Choose your drills</li>
+                <li>Add them to your playlist</li>
+                <li>Press Start when you're ready</li>
+              </ol>
             </div>
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
           </div>
