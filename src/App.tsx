@@ -201,7 +201,7 @@ function App() {
               <h1 className="text-2xl font-black tracking-wide">
                 SOCCER <span className="text-field">TRAINING</span>
               </h1>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Train Now. Every Touch Counts.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Every Move Has A Purpose. Every Touch Counts.</p>
             </div>
           </div>
           <button className="rounded-md p-2 text-3xl leading-none text-slate-800" aria-label="Menu">
@@ -928,17 +928,18 @@ function TimerPanel({
   return (
     <div className={compact ? "relative" : ""}>
       <h3 className={`${compact ? "text-sm" : "text-lg"} font-black uppercase text-field`}>Training Timer</h3>
-      <div className={`${compact ? "mt-2 gap-1.5" : "mt-4 gap-2"} flex flex-wrap`}>
-        {[60, 45, 30].map((option) => (
-          <button
-            key={option}
-            onClick={() => onChooseDuration(option)}
-            className={`focus-ring rounded-md font-bold ${compact ? "px-2.5 py-1.5 text-xs" : "px-3 py-2 text-sm"} ${duration === option ? "bg-field text-white" : "border border-slate-300 bg-white text-slate-700"}`}
-          >
-            {formatTime(option)}
-          </button>
-        ))}
-      </div>
+      <label className={`${compact ? "mt-2 max-w-32 text-xs" : "mt-4 max-w-40 text-sm"} grid gap-1 font-bold text-slate-700`}>
+        Countdown
+        <select
+          value={duration}
+          onChange={(event) => onChooseDuration(Number(event.target.value))}
+          className="focus-ring rounded-md border border-slate-300 bg-white px-2 py-1.5 font-normal"
+        >
+          <option value={60}>1:00</option>
+          <option value={45}>0:45</option>
+          <option value={30}>0:30</option>
+        </select>
+      </label>
       {compact && (
         <label className="mt-2 grid max-w-32 gap-1 text-xs font-bold text-slate-700">
           Rest seconds

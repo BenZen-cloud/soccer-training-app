@@ -187,7 +187,7 @@
           <div class="crest" aria-label="Soccer ball"><div class="ball"></div></div>
           <div>
             <h1>SOCCER <strong>TRAINING</strong></h1>
-            <div class="tag">Train Now. Every Touch Counts.</div>
+            <div class="tag">Every Move Has A Purpose. Every Touch Counts.</div>
           </div>
         </div>
         <button class="menu" aria-label="Menu">☰</button>
@@ -1159,11 +1159,13 @@
         const details = lastReps !== "" ? `Reps: ${esc(lastReps)}` : total && done >= total && !state.running && !state.resting ? "Complete" : state.running ? "Running" : state.resting ? "Rest" : "Press Start";
         const timePct = state.duration ? Math.max(0, Math.min(100, Math.round((state.seconds / state.duration) * 100))) : 0;
         return `<div class="panel-title">Training Timer</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-          <button class="btn ${state.duration===60?"primary":"light"}" onclick="chooseDuration(60)">1:00</button>
-          <button class="btn ${state.duration===45?"primary":"light"}" onclick="chooseDuration(45)">0:45</button>
-          <button class="btn ${state.duration===30?"primary":"light"}" onclick="chooseDuration(30)">0:30</button>
-        </div>
+        <label style="max-width:150px;margin-top:8px;font-size:12px">Countdown
+          <select onchange="chooseDuration(Number(this.value))" style="padding:6px 8px">
+            <option value="60" ${state.duration===60?"selected":""}>1:00</option>
+            <option value="45" ${state.duration===45?"selected":""}>0:45</option>
+            <option value="30" ${state.duration===30?"selected":""}>0:30</option>
+          </select>
+        </label>
         <label style="max-width:150px;margin-top:8px;font-size:12px">Rest seconds
           <input type="number" min="15" max="30" value="${esc(state.restDuration)}" onchange="setRestDuration(this.value)" style="padding:6px 8px">
         </label>
