@@ -194,8 +194,8 @@ function App() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-b-2xl rounded-t-lg border-4 border-field text-sm font-black text-field">
-              CT
+            <div className="grid h-12 w-12 place-items-center rounded-full border-4 border-field bg-white shadow-sm" aria-label="Soccer ball">
+              <div className="h-8 w-8 rounded-full border-2 border-slate-900 bg-white [background:radial-gradient(circle_at_50%_50%,#111_0_16%,transparent_17%),linear-gradient(36deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(108deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(180deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(252deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(324deg,transparent_41%,#111_42%_46%,transparent_47%)]" />
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-wide">

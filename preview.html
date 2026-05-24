@@ -21,7 +21,8 @@
       h2 { font-size: 28px; margin-bottom: 4px; }
       .muted { color: #64746a; font-size: 14px; }
       .brand { display: flex; align-items: center; gap: 12px; }
-      .crest { width: 52px; height: 52px; border: 3px solid #237a24; border-radius: 14px 14px 20px 20px; display:grid; place-items:center; color:#237a24; font-weight:900; }
+      .crest { width: 52px; height: 52px; border: 3px solid #237a24; border-radius: 50%; display:grid; place-items:center; background:#fff; box-shadow:0 2px 8px rgba(23,33,27,.08); }
+      .ball { width:34px; height:34px; border:2px solid #17211b; border-radius:50%; background:radial-gradient(circle at 50% 50%,#17211b 0 16%,transparent 17%),linear-gradient(36deg,transparent 41%,#17211b 42% 46%,transparent 47%),linear-gradient(108deg,transparent 41%,#17211b 42% 46%,transparent 47%),linear-gradient(180deg,transparent 41%,#17211b 42% 46%,transparent 47%),linear-gradient(252deg,transparent 41%,#17211b 42% 46%,transparent 47%),linear-gradient(324deg,transparent 41%,#17211b 42% 46%,transparent 47%),#fff; }
       .brand strong { color: #237a24; }
       .tag { color:#6b7280; font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
       .menu { border:0; background:#fff; font-size:34px; line-height:1; color:#17211b; }
@@ -183,7 +184,7 @@
     <header>
       <div class="wrap top">
         <div class="brand">
-          <div class="crest">CT</div>
+          <div class="crest" aria-label="Soccer ball"><div class="ball"></div></div>
           <div>
             <h1>SOCCER <strong>TRAINING</strong></h1>
             <div class="tag">Train Now. Every Touch Counts.</div>
