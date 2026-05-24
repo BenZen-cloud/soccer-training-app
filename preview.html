@@ -159,6 +159,12 @@
       .playlist-row .order { color:#64746a; font-weight:900; }
       .playlist-row button { padding:4px 7px; }
       .playlist-row .remove { color:#b42318; border-color:#f1c7c2; }
+      .playlist-drop { grid-column:1/-1; border:1px solid #dbe3dd; border-radius:8px; background:#f8fbf9; padding:10px; }
+      .playlist-drop summary { cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:10px; font-weight:900; color:#435047; }
+      .playlist-drop summary::-webkit-details-marker { display:none; }
+      .playlist-drop .chev { color:#15803d; font-size:18px; transition:transform .18s ease; }
+      .playlist-drop[open] .chev { transform:rotate(180deg); }
+      .playlist-actions { display:flex; justify-content:flex-end; gap:6px; flex-wrap:wrap; margin:10px 0 6px; }
       @media (max-width: 820px) {
         .home, .stats, .form, .two { grid-template-columns: 1fr; }
         .timer-progress, .notes-rating, .video-controls { grid-template-columns:1fr; }
@@ -1125,16 +1131,17 @@
               </select>
             </label>
             <div class="video-stage">${videoMarkup(video)}</div>
-            <div style="grid-column:1/-1">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px"><div class="muted" style="font-weight:800">Training playlist</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn light" onclick="clearPlaylist()">Clear All</button><button class="btn primary" onclick="startPlaylist(event)">Start Playlist</button></div></div>
+            <details class="playlist-drop">
+              <summary><span>Training playlist <small class="muted">(${sessionDrills().length ? `${sessionDrills().length} selected` : "select drills below"})</small></span><span class="chev">⌄</span></summary>
+              <div class="playlist-actions"><button class="btn light" onclick="clearPlaylist()">Clear All</button><button class="btn primary" onclick="startPlaylist(event)">Start Playlist</button></div>
               <div class="playlist">${sessionDrills().map((drill, index) => `<div class="playlist-row ${activeVideoDrill?.id===drill.id?"active":""}"><span class="order">${index + 1}</span><button class="btn light" onclick="setActiveDrill('${drill.id}')" style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(drill.name)}</button><label style="font-size:11px">Min<input type="number" min="1" value="${Math.round((drill.durationSeconds || 60) / 60)}" onchange="setDrillDuration('${drill.id}', this.value)" style="padding:4px 6px"></label><span><button class="btn light" onclick="movePlaylist('${drill.id}', -1)" title="Move up">↑</button> <button class="btn light" onclick="movePlaylist('${drill.id}', 1)" title="Move down">↓</button></span><button class="btn light remove" onclick="removeFromPlaylist('${drill.id}')" title="Remove from playlist">Remove</button></div>`).join("") || `<div class="muted">Select drills from the player or drill pages.</div>`}</div>
-            </div>
+            </details>
           </div>
         </section>
         <section class="card" style="margin-top:18px">
           <div class="panel-head">
             <div><div class="panel-title">Drills</div><div class="muted">Select drills here to add them to the playlist.</div></div>
-            <button class="btn light" onclick="setPage('Drills')">+ Add Drill</button>
+            <div style="display:flex;align-items:center;gap:8px"><div style="border:1px solid #bbdfc8;background:#f0f9f3;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#15803d;text-transform:uppercase">Selected</span><strong style="display:block;font-size:20px;line-height:1;color:#15803d">${state.sessionDrillIds.length}</strong></div><div style="border:1px solid #dbe3dd;background:#f8fbf9;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#64746a;text-transform:uppercase">Minutes</span><strong style="display:block;font-size:20px;line-height:1;color:#17211b">${Math.round(sessionDrills().reduce((sum, drill) => sum + (drill.durationSeconds || 60), 0) / 60)}</strong></div><button class="btn light" onclick="setPage('Drills')">+ Add Drill</button></div>
           </div>
           <label style="margin-bottom:10px">Search drills
             <input id="drillSearch" type="search" placeholder="Type a drill name..." oninput="filterDrillRows(this.value)">
@@ -1145,8 +1152,7 @@
           <div class="muted" style="padding-top:10px">${d.length} drills available from Jordan 2.0 and the All Drills sheet.</div>
         </section>
         <section class="card" style="margin-top:18px">
-          <div class="notes-rating">
-            <div><div class="panel-title">Session Notes</div><textarea id="homeNotes" maxlength="300" placeholder="Add your notes here..."></textarea><div class="muted" style="text-align:right">0 / 300</div></div>
+          <div>
             <div><div class="panel-title">Overall Session Rating</div><div class="session-stars">☆ ☆ ☆ ☆ ☆</div><button class="btn primary" style="width:100%" onclick="saveSession()">Save Session</button></div>
           </div>
         </section>`;

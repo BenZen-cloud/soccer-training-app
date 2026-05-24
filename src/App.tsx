@@ -435,6 +435,7 @@ function HomePage(props: {
   const playlistDrills = props.sessionDrillIds.map((id) => props.drills.find((drill) => drill.id === id)).filter((drill): drill is Drill => Boolean(drill));
   const playlistCompletedCount = playlistDrills.filter((drill) => drill.completed).length;
   const playlistProgress = playlistDrills.length ? Math.round((playlistCompletedCount / playlistDrills.length) * 100) : 0;
+  const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const uploadPlayerPhoto = (file?: File) => {
@@ -462,7 +463,6 @@ function HomePage(props: {
             <span>Position: Midfielder</span>
             <span>Age: 6</span>
             <span>Foot: Right</span>
-          </div>
         </div>
       </section>
 
@@ -528,19 +528,25 @@ function HomePage(props: {
           <div className="w-full justify-self-center md:col-span-3 md:max-w-[820px]">
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
           </div>
-          <div className="md:col-span-2">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="text-sm font-bold text-slate-600">Training playlist</div>
-              <div className="flex flex-wrap gap-1.5">
-                <button onClick={props.onClearPlaylist} className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
-                  Clear All
-                </button>
-                <button onClick={props.onStartPlaylist} className="focus-ring rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
-                  Start Playlist
-                </button>
-              </div>
+          <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+            <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 py-1">
+              <span>
+                <span className="block text-sm font-bold text-slate-700">Training playlist</span>
+                <span className="text-xs text-slate-500">
+                  {props.sessionDrillIds.length ? `${props.sessionDrillIds.length} selected` : "Select drills below"}
+                </span>
+              </span>
+              <span className="text-sm font-black text-field group-open:rotate-180">⌄</span>
+            </summary>
+            <div className="mt-3 flex flex-wrap justify-end gap-1.5">
+              <button onClick={props.onClearPlaylist} className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+                Clear All
+              </button>
+              <button onClick={props.onStartPlaylist} className="focus-ring rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
+                Start Playlist
+              </button>
             </div>
-            <div className="grid max-h-72 gap-1.5 overflow-auto">
+            <div className="mt-2 grid max-h-72 gap-1.5 overflow-auto">
               {props.sessionDrillIds
                 .map((id) => props.drills.find((drill) => drill.id === id))
                 .filter((drill): drill is Drill => Boolean(drill))
@@ -584,7 +590,7 @@ function HomePage(props: {
               ))}
               {props.sessionDrillIds.length === 0 && <div className="rounded-md border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500">Select drills from the player or drill pages.</div>}
             </div>
-          </div>
+          </details>
         </div>
       </section>
 
@@ -594,9 +600,19 @@ function HomePage(props: {
             <h3 className="text-xl font-black uppercase text-field">Drills</h3>
             <p className="mt-1 text-sm text-slate-500">Select drills here to add them to the playlist.</p>
           </div>
-          <button className="focus-ring rounded-md border border-blue-600 px-3 py-2 text-sm font-bold uppercase text-blue-700 hover:bg-blue-50">
-            + Add Drill
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center">
+              <span className="block text-[10px] font-black uppercase text-green-700">Selected</span>
+              <strong className="block text-lg leading-none text-field">{props.sessionDrillIds.length}</strong>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+              <span className="block text-[10px] font-black uppercase text-slate-600">Minutes</span>
+              <strong className="block text-lg leading-none text-slate-900">{playlistMinutes}</strong>
+            </div>
+            <button className="focus-ring rounded-md border border-blue-600 px-3 py-2 text-sm font-bold uppercase text-blue-700 hover:bg-blue-50">
+              + Add Drill
+            </button>
+          </div>
         </div>
         <label className="mb-3 grid gap-1 text-sm font-bold text-slate-700">
           Search drills
@@ -674,19 +690,12 @@ function HomePage(props: {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
-        <div className="grid gap-6 md:grid-cols-[1.2fr_0.9fr]">
-          <div className="md:border-r md:border-slate-200 md:pr-8">
-            <h3 className="text-xl font-black uppercase text-field">Session Notes</h3>
-            <textarea className="focus-ring mt-4 min-h-28 w-full rounded-md border border-slate-300 p-3" maxLength={300} placeholder="Add your notes here..." />
-            <div className="mt-2 text-right text-sm text-slate-500">0 / 300</div>
-          </div>
-          <div>
+        <div>
             <h3 className="text-xl font-black uppercase text-field">Overall Session Rating</h3>
             <div className="my-5 text-5xl tracking-widest text-slate-400">☆ ☆ ☆ ☆ ☆</div>
             <button onClick={props.onSaveSession} className="focus-ring w-full rounded-md bg-blue-700 px-4 py-3 font-bold uppercase text-white hover:bg-blue-800">
               Save Session
             </button>
-          </div>
         </div>
       </section>
     </div>
