@@ -463,9 +463,6 @@ function HomePage(props: {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-black uppercase text-field">Tutorial Video</h3>
         </div>
-        <p className="mb-4 max-w-3xl text-2xl font-black leading-tight text-slate-900">
-          Choose your drills, add them to your playlist, and press Start when you’re ready to train.
-        </p>
         <div className="mb-4 grid items-start gap-3 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
             <TimerPanel
@@ -511,6 +508,14 @@ function HomePage(props: {
             </select>
           </label>
           <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
+            <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-4">
+              <div className="mb-2 inline-flex rounded-md bg-field px-3 py-1 text-xs font-black uppercase text-white">
+                Instructions
+              </div>
+              <p className="text-2xl font-black leading-tight text-slate-900">
+                Choose your drills, add them to your playlist, and press Start when you're ready to train.
+              </p>
+            </div>
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
           </div>
           <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">

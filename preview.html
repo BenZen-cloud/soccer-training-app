@@ -1119,7 +1119,6 @@
         </section>
         <section class="card">
           <div class="panel-head"><div class="panel-title">Tutorial Video</div></div>
-          <div style="max-width:760px;margin:0 0 16px;font-size:26px;line-height:1.15;font-weight:900;color:#17211b">Choose your drills, add them to your playlist, and press Start when you&rsquo;re ready to train.</div>
           <div class="video-controls">
             <div class="inline-timer" id="timerCard">${timerMarkup()}</div>
             <label>Drill video
@@ -1127,7 +1126,13 @@
                 ${(sessionDrills().length ? sessionDrills() : d).filter(x => x.videoLink).map(x => `<option value="${x.id}" ${activeVideoDrill?.id===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}
               </select>
             </label>
-            <div class="video-stage">${videoMarkup(video)}</div>
+            <div class="video-stage">
+              <div style="margin:0 0 12px;border:1px solid #bbdfc8;background:#f0f9f3;border-radius:8px;padding:14px">
+                <div style="display:inline-flex;background:#15803d;color:#fff;border-radius:6px;padding:4px 10px;margin-bottom:8px;font-size:12px;font-weight:900;text-transform:uppercase">Instructions</div>
+                <div style="font-size:26px;line-height:1.15;font-weight:900;color:#17211b">Choose your drills, add them to your playlist, and press Start when you&rsquo;re ready to train.</div>
+              </div>
+              ${videoMarkup(video)}
+            </div>
             <details class="playlist-drop">
               <summary><span>Training playlist <small class="muted">(${sessionDrills().length ? `${sessionDrills().length} selected` : "select drills below"})</small></span><span class="chev">⌄</span></summary>
               <div class="playlist-actions"><button class="btn light" onclick="clearPlaylist()">Clear All</button><button class="btn primary" onclick="startPlaylist(event)">Start Playlist</button></div>
