@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   Clock3,
@@ -38,6 +38,181 @@ const emptyDrill: Omit<Drill, "id"> = {
   timer: "1",
   assigned: true,
 };
+
+const drillCategoryOrder = [
+  "Beginner Ball Skills",
+  "1 Cone Drills",
+  "2 Cone Drills",
+  "2 Cone Turns",
+  "10 Cone Turns",
+  "The Series",
+  "Full Pro Sessions",
+  "Beginner Juggling",
+  "Advance Juggling",
+  "Beginner Juggling Tricks",
+  "Advance Juggling Tricks",
+  "Ladder Drills",
+  "Shooting",
+  "Other Drills",
+];
+
+const drillCategoryByName: Record<string, string> = {
+  "stationary boxes": "Beginner Ball Skills",
+  "boxes up and back": "Beginner Ball Skills",
+  "box and roll": "Beginner Ball Skills",
+  "stationary tap": "Beginner Ball Skills",
+  "stationary taps": "Beginner Ball Skills",
+  "taps up and back": "Beginner Ball Skills",
+  "staionary scissor": "Beginner Ball Skills",
+  "stationary scissor": "Beginner Ball Skills",
+  "stationary scissors": "Beginner Ball Skills",
+  "push and scissor": "Beginner Ball Skills",
+  "how to do the in and out": "Beginner Ball Skills",
+  "the snake 3 variations": "Beginner Ball Skills",
+  "how to do the triangle step": "1 Cone Drills",
+  "how to do push and pull": "1 Cone Drills",
+  "how to do the one cone salsa": "1 Cone Drills",
+  "how to do the v then box": "1 Cone Drills",
+  "how to do the v inside": "1 Cone Drills",
+  "how to do the crossover push": "1 Cone Drills",
+  "how to do the box then roll": "1 Cone Drills",
+  "how to do the v outside": "1 Cone Drills",
+  "how to do the square step": "1 Cone Drills",
+  "how to box step": "2 Cone Drills",
+  "how to do the cross back": "2 Cone Drills",
+  "how to do in and out boxes": "2 Cone Drills",
+  "how to do the drag": "2 Cone Drills",
+  "how to do the outside v": "2 Cone Drills",
+  "how to do the fake shot v": "2 Cone Drills",
+  "how to do the irish jig": "2 Cone Drills",
+  "how to do the laces pull back": "2 Cone Drills",
+  "how to do the v turn": "2 Cone Drills",
+  "how to do the repeat v": "2 Cone Drills",
+  "how to slide and roll": "2 Cone Drills",
+  "how to do hot steppers": "2 Cone Drills",
+  "how to do the right foot 8": "2 Cone Turns",
+  "right foot 8": "2 Cone Turns",
+  "how to do the left foot 8": "2 Cone Turns",
+  "left foot 8": "2 Cone Turns",
+  "messie slide": "2 Cone Turns",
+  "messi slide": "2 Cone Turns",
+  "maradona turn": "2 Cone Turns",
+  "ronaldo combo": "2 Cone Turns",
+  "fake shot pull": "2 Cone Turns",
+  "body fake combo": "2 Cone Turns",
+  "sole turn combo": "2 Cone Turns",
+  "v turn combo": "2 Cone Turns",
+  "step over turn": "2 Cone Turns",
+  "sole turn right": "2 Cone Turns",
+  "sole turn left": "2 Cone Turns",
+  "v turn right": "2 Cone Turns",
+  "v turn left": "2 Cone Turns",
+  "step over inside": "2 Cone Turns",
+  "how to do the stop and go": "10 Cone Turns",
+  "how to do the stop and go remix": "10 Cone Turns",
+  "how to do the boxers and push": "10 Cone Turns",
+  "how to do the smiley face": "10 Cone Turns",
+  "how to do the box step": "10 Cone Turns",
+  "how to do the roll and push": "10 Cone Turns",
+  "how to do the outside v step": "10 Cone Turns",
+  "right foot only": "10 Cone Turns",
+  "left foot only": "10 Cone Turns",
+  "how to do all outside": "10 Cone Turns",
+  "how to do the backwards v": "10 Cone Turns",
+  "scissor step left": "10 Cone Turns",
+  "scissor step right": "10 Cone Turns",
+  "how to do the v step": "10 Cone Turns",
+  "how to do the v combo": "10 Cone Turns",
+  "how to do the hot steppers": "10 Cone Turns",
+  "how to do the slide": "10 Cone Turns",
+  "how to do the up and backs": "10 Cone Turns",
+  "how to do the salsa slide": "10 Cone Turns",
+  "learning the series part 1": "The Series",
+  "learning the series part 2": "The Series",
+  "learning the series part 3": "The Series",
+  "learning the series part 4": "The Series",
+  "elite training w mls pro": "Full Pro Sessions",
+  "1000 touches w mls pro": "Full Pro Sessions",
+  "how to practice like a mls pro": "Full Pro Sessions",
+  "pro soccer skills session": "Full Pro Sessions",
+  "how to train like a pro": "Full Pro Sessions",
+  "beginner skills session": "Full Pro Sessions",
+  "1 touch and catch": "Beginner Juggling",
+  "1 touch bounce juggling": "Beginner Juggling",
+  "2 touches and catch": "Beginner Juggling",
+  "2 touch bounce juggling": "Beginner Juggling",
+  "1 touch alternating": "Advance Juggling",
+  "2 touch alternating": "Advance Juggling",
+  "3 touch alternating": "Advance Juggling",
+  "above the head juggling": "Advance Juggling",
+  "all body one touch": "Advance Juggling",
+  "all body 2 touches": "Advance Juggling",
+  "how to do low then high juggles": "Advance Juggling",
+  "feet and thigh combo": "Advance Juggling",
+  "head only juggling": "Advance Juggling",
+  "rainbow": "Beginner Juggling Tricks",
+  "one foot flick": "Beginner Juggling Tricks",
+  "scoop": "Beginner Juggling Tricks",
+  "stomp": "Beginner Juggling Tricks",
+  "spin lift": "Beginner Juggling Tricks",
+  "toe pinch": "Beginner Juggling Tricks",
+  "toe lift": "Beginner Juggling Tricks",
+  "two foot flick": "Beginner Juggling Tricks",
+  "touzani": "Advance Juggling Tricks",
+  "spin backheel": "Advance Juggling Tricks",
+  "wingrove": "Advance Juggling Tricks",
+  "around the world": "Advance Juggling Tricks",
+  "crossover": "Advance Juggling Tricks",
+  "slam down lift": "Advance Juggling Tricks",
+  "hop the world": "Advance Juggling Tricks",
+  "all body stalls": "Advance Juggling Tricks",
+  "heel touch": "Advance Juggling Tricks",
+  "toe to toe lift": "Advance Juggling Tricks",
+  "around the leg lift": "Advance Juggling Tricks",
+  "heel to toe lift": "Advance Juggling Tricks",
+  "waltz": "Advance Juggling Tricks",
+  "one in each": "Ladder Drills",
+  "two in each": "Ladder Drills",
+  "lateral step": "Ladder Drills",
+  "skier": "Ladder Drills",
+  "lateral hops": "Ladder Drills",
+  "jab step": "Ladder Drills",
+  "typewriter": "Ladder Drills",
+  "backwards typewriter": "Ladder Drills",
+  "karaoke": "Ladder Drills",
+  "karaoke combo": "Ladder Drills",
+  "2 forward and 1 back": "Ladder Drills",
+  "lateral double step": "Ladder Drills",
+  "shooting with right foot": "Shooting",
+  "shooting with left foot": "Shooting",
+};
+
+function drillCategoryKey(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
+    .replace(/&/g, "and")
+    .replace(/\byoutube\b/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getDrillCategory(drill: Drill) {
+  return drillCategoryByName[drillCategoryKey(drill.name)] ?? "Other Drills";
+}
+
+function groupDrillsByCategory(drills: Drill[]) {
+  const groups = new Map<string, Drill[]>();
+  drills.forEach((drill) => {
+    const category = getDrillCategory(drill);
+    groups.set(category, [...(groups.get(category) ?? []), drill]);
+  });
+  return Array.from(groups.entries()).sort(([a], [b]) => {
+    const aIndex = drillCategoryOrder.indexOf(a);
+    const bIndex = drillCategoryOrder.indexOf(b);
+    return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex) || a.localeCompare(b);
+  });
+}
 
 function App() {
   const [state, setState] = useState<TrackerState>(() => loadState());
@@ -438,6 +613,7 @@ function HomePage(props: {
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
+  const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
   return (
     <div className="space-y-5">
       <section className="flex items-center gap-6">
@@ -509,16 +685,7 @@ function HomePage(props: {
             </select>
           </label>
           <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
-            <div className="mb-3 rounded-lg border border-green-200 bg-green-50 p-4">
-              <div className="mb-2 inline-flex rounded-md bg-field px-3 py-1 text-xs font-black uppercase text-white">
-                Instructions
-              </div>
-              <ol className="list-decimal space-y-1 pl-5 text-2xl font-black leading-tight text-slate-900">
-                <li>Choose your drills</li>
-                <li>Add them to your playlist</li>
-                <li>Press Start when you're ready</li>
-              </ol>
-            </div>
+            <TrainingInstructions />
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
           </div>
           <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
@@ -630,51 +797,60 @@ function HomePage(props: {
               </tr>
             </thead>
             <tbody>
-              {visibleDrills.map((drill, index) => (
-                <tr key={drill.id} className="border-b border-slate-100">
-                  <td className="px-2 py-1.5 font-bold">{index + 1}</td>
-                  <td className="px-2 py-1.5">
-                    <label className="inline-flex items-center gap-1.5 font-bold text-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={props.sessionDrillIds.includes(drill.id)}
-                        onChange={(event) => props.onToggleSessionDrill(drill.id, event.target.checked)}
-                        className="h-4 w-4 accent-field"
-                      />
-                      Add
-                    </label>
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <button
-                      onClick={() => props.onActivateDrill(drill)}
-                      className="focus-ring w-full rounded border border-slate-300 px-2 py-1.5 text-left font-bold"
-                    >
-                      {drill.name}
-                    </button>
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <input
-                      value={drill.timer || "1"}
-                      onChange={(event) => props.onUpdateDrill({ ...drill, timer: event.target.value, durationSeconds: parseDurationLabel(event.target.value) })}
-                      className="w-20 rounded border border-slate-300 px-2 py-1.5"
-                    />
-                  </td>
-                  <td className="px-2 py-1.5">
-                    <input
-                      value={drill.count ?? ""}
-                      onChange={(event) => props.onUpdateDrill({ ...drill, count: event.target.value })}
-                      placeholder="Count"
-                      className="w-20 rounded border border-slate-300 px-2 py-1.5"
-                    />
-                  </td>
-                  <td className="px-2 py-1.5">
-                    {drill.videoLink && (
-                      <a href={drill.videoLink} target="_blank" rel="noreferrer" className="focus-ring inline-flex rounded-md border border-blue-600 px-2 py-1.5 font-bold text-blue-700">
-                        Video
-                      </a>
-                    )}
-                  </td>
-                </tr>
+              {categorizedVisibleDrills.map(([category, drills]) => (
+                <Fragment key={category}>
+                  <tr className="border-b border-green-100 bg-green-50">
+                    <td colSpan={6} className="px-2 py-2 text-[11px] font-black uppercase tracking-wide text-field">
+                      {category} <span className="text-slate-500">({drills.length})</span>
+                    </td>
+                  </tr>
+                  {drills.map((drill) => (
+                    <tr key={drill.id} className="border-b border-slate-100">
+                      <td className="px-2 py-1.5 font-bold">{visibleDrills.indexOf(drill) + 1}</td>
+                      <td className="px-2 py-1.5">
+                        <label className="inline-flex items-center gap-1.5 font-bold text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={props.sessionDrillIds.includes(drill.id)}
+                            onChange={(event) => props.onToggleSessionDrill(drill.id, event.target.checked)}
+                            className="h-4 w-4 accent-field"
+                          />
+                          Add
+                        </label>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <button
+                          onClick={() => props.onActivateDrill(drill)}
+                          className="focus-ring w-full rounded border border-slate-300 px-2 py-1.5 text-left font-bold"
+                        >
+                          {drill.name}
+                        </button>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          value={drill.timer || "1"}
+                          onChange={(event) => props.onUpdateDrill({ ...drill, timer: event.target.value, durationSeconds: parseDurationLabel(event.target.value) })}
+                          className="w-20 rounded border border-slate-300 px-2 py-1.5"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          value={drill.count ?? ""}
+                          onChange={(event) => props.onUpdateDrill({ ...drill, count: event.target.value })}
+                          placeholder="Count"
+                          className="w-20 rounded border border-slate-300 px-2 py-1.5"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        {drill.videoLink && (
+                          <a href={drill.videoLink} target="_blank" rel="noreferrer" className="focus-ring inline-flex rounded-md border border-blue-600 px-2 py-1.5 font-bold text-blue-700">
+                            Video
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -683,6 +859,45 @@ function HomePage(props: {
       </section>
 
     </div>
+  );
+}
+
+function TrainingInstructions() {
+  const steps = [
+    { icon: "⚽", title: "Choose your drills", detail: "Pick the skills you want to train today." },
+    { icon: "+", title: "Add to playlist", detail: "Build a quick practice lineup." },
+    { icon: "▶", title: "Press Start", detail: "Train when you're ready." },
+  ];
+
+  return (
+    <section className="mb-4 overflow-hidden rounded-2xl border-2 border-green-200 bg-[#eefbf2] shadow-[0_12px_30px_rgba(21,128,61,0.12)]">
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');`}</style>
+      <div className="relative grid gap-4 p-4 font-['Fredoka',ui-sans-serif] text-slate-900 sm:p-5">
+        <div className="pointer-events-none absolute inset-x-4 top-1/2 h-px bg-white/80" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px bg-white/80" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="inline-flex rounded-full bg-field px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+              Instructions
+            </div>
+            <h4 className="mt-2 text-2xl font-bold leading-tight text-field sm:text-3xl">Ready to train?</h4>
+          </div>
+          <div className="hidden rounded-full bg-white px-4 py-2 text-sm font-bold text-field shadow-sm sm:block">Every touch counts</div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {steps.map((step, index) => (
+            <div key={step.title} className="relative rounded-xl border border-green-200 bg-white/90 p-3 shadow-sm">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-field text-lg font-bold text-white">{step.icon}</span>
+                <span className="text-xs font-bold uppercase text-green-700">Step {index + 1}</span>
+              </div>
+              <div className="text-lg font-bold leading-tight">{step.title}</div>
+              <p className="mt-1 text-sm font-medium leading-snug text-slate-600">{step.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
