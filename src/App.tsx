@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import {
   Clock3,
@@ -665,6 +665,121 @@ function App() {
   );
 }
 
+type CategoryVisual = {
+  icon: string;
+  title: string;
+  subtitle: string;
+  background: string;
+  border: string;
+  accent: string;
+  pattern: string;
+};
+
+const categoryPalette = [
+  { background: "linear-gradient(135deg, #effaf3 0%, #d7f2e1 100%)", border: "#bbdfc8", accent: "#15803d" },
+  { background: "linear-gradient(135deg, #eef6ff 0%, #dbeafe 100%)", border: "#bfdbfe", accent: "#2563eb" },
+  { background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", border: "#fed7aa", accent: "#ea580c" },
+  { background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#ddd6fe", accent: "#7c3aed" },
+  { background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)", border: "#fecaca", accent: "#dc2626" },
+  { background: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)", border: "#a5f3fc", accent: "#0891b2" },
+];
+
+function categoryVisual(category: string, index: number): CategoryVisual {
+  const normalized = category.toLowerCase();
+  const fallback = categoryPalette[index % categoryPalette.length];
+  let visual: CategoryVisual = {
+    ...fallback,
+    icon: "SK",
+    title: category,
+    subtitle: "Choose a drill and add it to your plan.",
+    pattern: "repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,.5) 14px 15px)",
+  };
+
+  if (normalized.includes("ball") || normalized.includes("cone drills") || normalized.includes("1 cone")) {
+    visual = {
+      icon: "BM",
+      title: normalized.includes("beginner") ? "Ball Mastery" : category,
+      subtitle: "Quick touches and close control.",
+      background: "linear-gradient(135deg, #edfdf4 0%, #d9f99d 120%)",
+      border: "#bbf7d0",
+      accent: "#15803d",
+      pattern: "radial-gradient(circle at 18% 20%, rgba(21,128,61,.14) 0 18px, transparent 19px), radial-gradient(circle at 90% 10%, rgba(21,128,61,.12) 0 28px, transparent 29px)",
+    };
+  } else if (normalized.includes("pass")) {
+    visual = {
+      icon: "PA",
+      title: "Passing",
+      subtitle: "Move the ball with purpose.",
+      background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
+      border: "#bfdbfe",
+      accent: "#2563eb",
+      pattern: "linear-gradient(120deg, transparent 0 45%, rgba(37,99,235,.18) 45% 47%, transparent 47%)",
+    };
+  } else if (normalized.includes("turn") || normalized.includes("dribbl") || normalized.includes("cone")) {
+    visual = {
+      icon: "DR",
+      title: normalized.includes("turn") ? "Turns & Dribbling" : "Dribbling",
+      subtitle: "Change direction and beat space.",
+      background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
+      border: "#fed7aa",
+      accent: "#ea580c",
+      pattern: "linear-gradient(135deg, transparent 0 20%, rgba(234,88,12,.14) 20% 23%, transparent 23% 43%, rgba(234,88,12,.14) 43% 46%, transparent 46%)",
+    };
+  } else if (normalized.includes("shoot")) {
+    visual = {
+      icon: "GO",
+      title: "Shooting",
+      subtitle: "Strike clean and aim with power.",
+      background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      border: "#fecaca",
+      accent: "#dc2626",
+      pattern: "linear-gradient(90deg, rgba(220,38,38,.10) 1px, transparent 1px), linear-gradient(0deg, rgba(220,38,38,.10) 1px, transparent 1px)",
+    };
+  } else if (normalized.includes("ladder") || normalized.includes("fitness") || normalized.includes("agility")) {
+    visual = {
+      icon: "FT",
+      title: "Fitness",
+      subtitle: "Build speed, balance, and stamina.",
+      background: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)",
+      border: "#a5f3fc",
+      accent: "#0891b2",
+      pattern: "repeating-linear-gradient(90deg, transparent 0 18px, rgba(8,145,178,.14) 18px 20px)",
+    };
+  } else if (normalized.includes("first") || normalized.includes("touch") || normalized.includes("control")) {
+    visual = {
+      icon: "TC",
+      title: "First Touch",
+      subtitle: "Receive, cushion, and set up.",
+      background: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)",
+      border: "#99f6e4",
+      accent: "#0f766e",
+      pattern: "radial-gradient(circle at 80% 20%, rgba(15,118,110,.14) 0 34px, transparent 35px)",
+    };
+  } else if (normalized.includes("juggl")) {
+    visual = {
+      icon: "JG",
+      title: "Juggling",
+      subtitle: "Coordination and ball feel.",
+      background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)",
+      border: "#ddd6fe",
+      accent: "#7c3aed",
+      pattern: "radial-gradient(circle at 22% 80%, rgba(124,58,237,.14) 0 26px, transparent 27px)",
+    };
+  } else if (normalized.includes("series") || normalized.includes("pro")) {
+    visual = {
+      icon: "TR",
+      title: normalized.includes("pro") ? "Pro Sessions" : "Training Series",
+      subtitle: "Follow a complete skill progression.",
+      background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+      border: "#cbd5e1",
+      accent: "#334155",
+      pattern: "linear-gradient(145deg, transparent 0 28%, rgba(51,65,85,.10) 28% 30%, transparent 30%)",
+    };
+  }
+
+  return visual;
+}
+
 function HomePage(props: {
   player: Player;
   players: Player[];
@@ -706,7 +821,7 @@ function HomePage(props: {
   const playlistProgress = playlistDrills.length ? Math.round((playlistCompletedCount / playlistDrills.length) * 100) : 0;
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
-  const [closedCategories, setClosedCategories] = useState<Record<string, boolean>>({});
+  const [selectedCategoryDrills, setSelectedCategoryDrills] = useState<Record<string, string>>({});
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
   const recommendedPlaylists = useMemo(
@@ -869,8 +984,8 @@ function HomePage(props: {
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-xl font-black uppercase text-field">Drills</h3>
-            <p className="mt-1 text-sm text-slate-500">Select drills here to add them to the playlist.</p>
+            <h3 className="text-xl font-black uppercase text-field">Playlist Selection</h3>
+            <p className="mt-1 text-sm text-slate-500">Choose a category, select a drill, and add it to your training playlist.</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center">
@@ -912,85 +1027,74 @@ function HomePage(props: {
             className="focus-ring rounded-md border border-slate-300 px-3 py-2 font-normal"
           />
         </label>
-        <div className="max-h-96 overflow-auto rounded-lg border border-slate-200">
-          <table className="w-full min-w-[620px] border-collapse text-xs">
-            <thead>
-              <tr className="sticky top-0 border-b border-slate-200 bg-slate-50 text-left text-[11px] uppercase text-slate-700">
-                <th className="px-2 py-2">#</th>
-                <th className="px-2 py-2">Playlist</th>
-                <th className="px-2 py-2">Drill</th>
-                <th className="px-2 py-2">Time</th>
-                <th className="px-2 py-2">Count</th>
-                <th className="px-2 py-2">Video</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categorizedVisibleDrills.map(([category, drills]) => (
-                <Fragment key={category}>
-                  <tr className="border-b border-green-100 bg-green-50">
-                    <td colSpan={6} className="px-2 py-2 text-[11px] font-black uppercase tracking-wide text-field">
-                      <button
-                        type="button"
-                        onClick={() => setClosedCategories((current) => ({ ...current, [category]: !current[category] }))}
-                        className="flex w-full items-center justify-between rounded px-1 py-1 text-left font-black uppercase tracking-wide text-field hover:bg-green-100"
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {categorizedVisibleDrills.map(([category, drills], index) => {
+            const visual = categoryVisual(category, index);
+            const selectedId = selectedCategoryDrills[category] ?? "";
+            const selectedDrill = drills.find((drill) => drill.id === selectedId);
+
+            return (
+              <article
+                key={category}
+                className="relative overflow-hidden rounded-xl border p-3 shadow-sm"
+                style={{ background: visual.background, borderColor: visual.border }}
+              >
+                <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: visual.pattern }} />
+                <div className="relative flex items-start gap-3">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-sm font-black text-white shadow-sm" style={{ backgroundColor: visual.accent }}>
+                    {visual.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-base font-black text-slate-900">{visual.title}</h4>
+                        <p className="mt-0.5 text-xs font-semibold text-slate-600">{visual.subtitle}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-white/80 px-2 py-1 text-[11px] font-black text-slate-700">{drills.length} drills</span>
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      <select
+                        value={selectedId}
+                        onChange={(event) => setSelectedCategoryDrills((current) => ({ ...current, [category]: event.target.value }))}
+                        className="focus-ring rounded-md border border-white/70 bg-white px-3 py-2 text-sm font-bold text-slate-800 shadow-sm"
                       >
-                        <span>
-                          {category} <span className="text-slate-500">({drills.length})</span>
-                        </span>
-                        <span className="text-sm">{closedCategories[category] ? "v" : "^"}</span>
-                      </button>
-                    </td>
-                  </tr>
-                  {!closedCategories[category] && drills.map((drill) => (
-                    <tr key={drill.id} className="border-b border-slate-100">
-                      <td className="px-2 py-1.5 font-bold">{visibleDrills.indexOf(drill) + 1}</td>
-                      <td className="px-2 py-1.5">
-                        <label className="inline-flex items-center gap-1.5 font-bold text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={props.sessionDrillIds.includes(drill.id)}
-                            onChange={(event) => props.onToggleSessionDrill(drill.id, event.target.checked)}
-                            className="h-4 w-4 accent-field"
-                          />
-                          Add
-                        </label>
-                      </td>
-                      <td className="px-2 py-1.5">
+                        <option value="">Select a drill</option>
+                        {drills.map((drill) => (
+                          <option key={drill.id} value={drill.id}>
+                            {drill.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="grid grid-cols-2 gap-2">
                         <button
-                          onClick={() => props.onActivateDrill(drill)}
-                          className="focus-ring w-full rounded border border-slate-300 px-2 py-1.5 text-left font-bold"
+                          type="button"
+                          disabled={!selectedDrill}
+                          onClick={() => selectedDrill && props.onToggleSessionDrill(selectedDrill.id, true)}
+                          className="focus-ring rounded-md px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          style={{ backgroundColor: visual.accent }}
                         >
-                          {drill.name}
+                          Add to Playlist
                         </button>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          value={drill.timer || "1"}
-                          onChange={(event) => props.onUpdateDrill({ ...drill, timer: event.target.value, durationSeconds: parseDurationLabel(event.target.value) })}
-                          className="w-20 rounded border border-slate-300 px-2 py-1.5"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          value={drill.count ?? ""}
-                          onChange={(event) => props.onUpdateDrill({ ...drill, count: event.target.value })}
-                          placeholder="Count"
-                          className="w-20 rounded border border-slate-300 px-2 py-1.5"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        {drill.videoLink && (
-                          <a href={drill.videoLink} target="_blank" rel="noreferrer" className="focus-ring inline-flex rounded-md border border-blue-600 px-2 py-1.5 font-bold text-blue-700">
-                            Video
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
+                        <button
+                          type="button"
+                          disabled={!selectedDrill}
+                          onClick={() => selectedDrill && props.onActivateDrill(selectedDrill)}
+                          className="focus-ring rounded-md border border-white/80 bg-white/90 px-3 py-2 text-sm font-black text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Preview
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+          {!categorizedVisibleDrills.length && (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm font-semibold text-slate-500 md:col-span-2 xl:col-span-3">
+              No drill categories match your search.
+            </div>
+          )}
         </div>
         <div className="pt-3 text-sm text-slate-500">{visibleDrills.length} of {props.drills.length} drills shown from Jordan 2.0 and the All Drills sheet.</div>
       </section>

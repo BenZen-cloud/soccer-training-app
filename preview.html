@@ -140,6 +140,19 @@
       .recommended-card:hover { border-color:#15803d; background:#e4f7eb; }
       .recommended-card strong { display:block; color:#15803d; font-size:14px; line-height:1.1; }
       .recommended-card span { display:block; margin-top:3px; color:#64746a; font-size:12px; font-weight:700; line-height:1.2; }
+      .category-card-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+      .category-card { position:relative; overflow:hidden; border:1px solid var(--card-border); border-radius:14px; background:var(--card-bg); padding:12px; box-shadow:0 8px 18px rgba(23,33,27,.07); }
+      .category-card::before { content:""; position:absolute; inset:0; background:var(--card-pattern); opacity:.75; pointer-events:none; }
+      .category-card > * { position:relative; z-index:1; }
+      .category-card-head { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+      .category-icon { width:44px; height:44px; border-radius:14px; display:grid; place-items:center; flex:0 0 auto; background:var(--card-accent); color:#fff; font-weight:900; font-size:13px; box-shadow:0 4px 12px rgba(23,33,27,.16); }
+      .category-card h4 { margin:0; color:#17211b; font-size:16px; line-height:1.1; }
+      .category-card p { margin:3px 0 0; color:#55645c; font-size:12px; line-height:1.25; font-weight:700; }
+      .category-count { margin-left:auto; white-space:nowrap; border-radius:999px; background:rgba(255,255,255,.78); padding:5px 8px; color:#435047; font-size:11px; font-weight:900; }
+      .category-select { margin-top:8px; font-size:13px; font-weight:800; border-color:rgba(255,255,255,.75); box-shadow:0 2px 8px rgba(23,33,27,.06); }
+      .category-card-actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:8px; }
+      .category-card-actions .btn { padding:8px 9px; font-size:12px; }
+      .category-empty { grid-column:1/-1; border:1px dashed #cbd5cf; border-radius:10px; background:#f8fbf9; padding:14px; color:#64746a; font-weight:800; }
       .drill-name-btn { width:100%; text-align:left; padding:6px 8px; border-radius:6px; border:1px solid #d3ddd6; background:#fff; color:#17211b; font-weight:800; cursor:pointer; }
       .select-chip { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:12px; font-weight:800; }
       .select-chip input { width:auto; }
@@ -199,6 +212,7 @@
         .timer-progress, .notes-rating, .video-controls { grid-template-columns:1fr; }
         .instruction-grid { grid-template-columns:1fr; }
         .recommended-playlists { grid-template-columns:1fr; }
+        .category-card-grid { grid-template-columns:1fr; }
         .instruction-pill { display:none; }
         .instruction-title { font-size:25px; }
         .timer-side, .notes-rating > div:first-child { border-right:0; padding-right:0; }
@@ -243,6 +257,7 @@
         duration: 60,
         running: false,
         closedCategories: {},
+        drillSearch: "",
         players: [{ id: "player-jordan", name: "Jordan", notes: "Sample player created from the Jordan 2.0 sheet.", drillIds: [], photoDataUrl: defaultPlayerAvatar }],
         sessions: [{ id: "session-1", playerId: "player-jordan", date: "2026-05-09", minutes: 35, completedDrills: 10, notes: "Started with ball mastery and finishing work." }],
         drills: [
@@ -1128,6 +1143,76 @@
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b);
         });
       }
+      const categoryPalettes = [
+        { bg: "linear-gradient(135deg, #effaf3 0%, #d7f2e1 100%)", border: "#bbdfc8", accent: "#15803d" },
+        { bg: "linear-gradient(135deg, #eef6ff 0%, #dbeafe 100%)", border: "#bfdbfe", accent: "#2563eb" },
+        { bg: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", border: "#fed7aa", accent: "#ea580c" },
+        { bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#ddd6fe", accent: "#7c3aed" },
+        { bg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)", border: "#fecaca", accent: "#dc2626" },
+        { bg: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)", border: "#a5f3fc", accent: "#0891b2" }
+      ];
+      function categoryVisual(category, index) {
+        const name = String(category || "").toLowerCase();
+        let visual = {
+          ...categoryPalettes[index % categoryPalettes.length],
+          icon: "SK",
+          title: category,
+          subtitle: "Choose a drill and add it to your plan.",
+          pattern: "repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,.5) 14px 15px)"
+        };
+        if (name.includes("ball") || name.includes("cone drills") || name.includes("1 cone")) {
+          visual = { icon: "BM", title: name.includes("beginner") ? "Ball Mastery" : category, subtitle: "Quick touches and close control.", bg: "linear-gradient(135deg, #edfdf4 0%, #d9f99d 120%)", border: "#bbf7d0", accent: "#15803d", pattern: "radial-gradient(circle at 18% 20%, rgba(21,128,61,.14) 0 18px, transparent 19px), radial-gradient(circle at 90% 10%, rgba(21,128,61,.12) 0 28px, transparent 29px)" };
+        } else if (name.includes("pass")) {
+          visual = { icon: "PA", title: "Passing", subtitle: "Move the ball with purpose.", bg: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", border: "#bfdbfe", accent: "#2563eb", pattern: "linear-gradient(120deg, transparent 0 45%, rgba(37,99,235,.18) 45% 47%, transparent 47%)" };
+        } else if (name.includes("turn") || name.includes("dribbl") || name.includes("cone")) {
+          visual = { icon: "DR", title: name.includes("turn") ? "Turns & Dribbling" : "Dribbling", subtitle: "Change direction and beat space.", bg: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", border: "#fed7aa", accent: "#ea580c", pattern: "linear-gradient(135deg, transparent 0 20%, rgba(234,88,12,.14) 20% 23%, transparent 23% 43%, rgba(234,88,12,.14) 43% 46%, transparent 46%)" };
+        } else if (name.includes("shoot")) {
+          visual = { icon: "GO", title: "Shooting", subtitle: "Strike clean and aim with power.", bg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)", border: "#fecaca", accent: "#dc2626", pattern: "linear-gradient(90deg, rgba(220,38,38,.10) 1px, transparent 1px), linear-gradient(0deg, rgba(220,38,38,.10) 1px, transparent 1px)" };
+        } else if (name.includes("ladder") || name.includes("fitness") || name.includes("agility")) {
+          visual = { icon: "FT", title: "Fitness", subtitle: "Build speed, balance, and stamina.", bg: "linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)", border: "#a5f3fc", accent: "#0891b2", pattern: "repeating-linear-gradient(90deg, transparent 0 18px, rgba(8,145,178,.14) 18px 20px)" };
+        } else if (name.includes("first") || name.includes("touch") || name.includes("control")) {
+          visual = { icon: "TC", title: "First Touch", subtitle: "Receive, cushion, and set up.", bg: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)", border: "#99f6e4", accent: "#0f766e", pattern: "radial-gradient(circle at 80% 20%, rgba(15,118,110,.14) 0 34px, transparent 35px)" };
+        } else if (name.includes("juggl")) {
+          visual = { icon: "JG", title: "Juggling", subtitle: "Coordination and ball feel.", bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#ddd6fe", accent: "#7c3aed", pattern: "radial-gradient(circle at 22% 80%, rgba(124,58,237,.14) 0 26px, transparent 27px)" };
+        } else if (name.includes("series") || name.includes("pro")) {
+          visual = { icon: "TR", title: name.includes("pro") ? "Pro Sessions" : "Training Series", subtitle: "Follow a complete skill progression.", bg: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", border: "#cbd5e1", accent: "#334155", pattern: "linear-gradient(145deg, transparent 0 28%, rgba(51,65,85,.10) 28% 30%, transparent 30%)" };
+        }
+        return visual;
+      }
+      function categoryCardMarkup(category, drills, index) {
+        const visual = categoryVisual(category, index);
+        const selectId = `category-drill-${index}`;
+        return `<article class="category-card" style="--card-bg:${visual.bg};--card-border:${visual.border};--card-accent:${visual.accent};--card-pattern:${visual.pattern}">
+          <div class="category-card-head">
+            <div class="category-icon">${esc(visual.icon)}</div>
+            <div><h4>${esc(visual.title)}</h4><p>${esc(visual.subtitle)}</p></div>
+            <span class="category-count">${drills.length} drills</span>
+          </div>
+          <select class="category-select" id="${selectId}" aria-label="Select a drill from ${esc(category)}">
+            <option value="">Select a drill</option>
+            ${drills.map(drill => `<option value="${drill.id}">${esc(drill.name)}</option>`).join("")}
+          </select>
+          <div class="category-card-actions">
+            <button class="btn primary" type="button" onclick="addCategoryDrill('${selectId}')">Add to Playlist</button>
+            <button class="btn light" type="button" onclick="previewCategoryDrill('${selectId}')">Preview</button>
+          </div>
+        </article>`;
+      }
+      function addCategoryDrill(selectId) {
+        const id = document.getElementById(selectId)?.value;
+        if (!id) return;
+        toggleSessionDrill(id, true);
+      }
+      function previewCategoryDrill(selectId) {
+        const id = document.getElementById(selectId)?.value;
+        if (!id) return;
+        setActiveDrill(id, true);
+      }
+      function setDrillSearch(value) {
+        state.drillSearch = String(value || "");
+        save();
+        renderPreservingPosition();
+      }
       const eliteTrainingPlaylistNames = [
         "HOW TO DO THE STOP & GO",
         "HOW TO DO THE SMILEY FACE",
@@ -1437,7 +1522,9 @@
 
       function renderHome() {
         const p = selectedPlayer();
-        const d = playerDrills();
+        const allPlayerDrills = playerDrills();
+        const searchQuery = String(state.drillSearch || "").trim().toLowerCase();
+        const d = searchQuery ? allPlayerDrills.filter(drill => drill.name.toLowerCase().includes(searchQuery)) : allPlayerDrills;
         const done = d.filter(x => x.completed).length;
         const activeVideoDrill = selectedVideoDrill();
         const video = activeVideoDrill?.videoLink || videoUrl();
@@ -1486,20 +1573,17 @@
         </section>
         <section class="card" style="margin-top:18px">
           <div class="panel-head">
-            <div><div class="panel-title">Drills</div><div class="muted">Select drills here to add them to the playlist.</div></div>
+            <div><div class="panel-title">Playlist Selection</div><div class="muted">Choose a category, select a drill, and add it to your training playlist.</div></div>
             <div style="display:flex;align-items:center;gap:8px"><div style="border:1px solid #bbdfc8;background:#f0f9f3;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#15803d;text-transform:uppercase">Selected</span><strong style="display:block;font-size:20px;line-height:1;color:#15803d">${state.sessionDrillIds.length}</strong></div><div style="border:1px solid #dbe3dd;background:#f8fbf9;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#64746a;text-transform:uppercase">Minutes</span><strong style="display:block;font-size:20px;line-height:1;color:#17211b">${Math.round(sessionDrills().reduce((sum, drill) => sum + (drill.durationSeconds || 60), 0) / 60)}</strong></div><button class="btn light" onclick="setPage('Drills')">+ Add Drill</button></div>
           </div>
           ${recommendedPlaylistMarkup()}
           <label style="margin-bottom:10px">Search drills
-            <input id="drillSearch" type="search" placeholder="Type a drill name..." oninput="filterDrillRows(this.value)">
+            <input id="drillSearch" type="search" placeholder="Type a drill name..." value="${esc(state.drillSearch || "")}" oninput="setDrillSearch(this.value)">
           </label>
-          <div class="table-scroll drill-selector"><table class="drills-table"><thead><tr><th>#</th><th>Playlist</th><th>Drill</th><th>Time</th><th>Count</th><th>Video</th></tr></thead><tbody>
-          ${groupedDrills(d).map(([category, drills]) => {
-            const closed = state.closedCategories?.[category];
-            return `<tr class="category-row" data-category-row="true"><td colspan="6"><button class="category-toggle" onclick="toggleCategory('${esc(category)}')"><span>${esc(category)} <span>(${drills.length})</span></span><span class="arrow">${closed ? "v" : "^"}</span></button></td></tr>${closed ? "" : drills.map(x => `<tr data-drill-name="${esc(x.name.toLowerCase())}"><td><strong>${d.indexOf(x)+1}</strong></td><td><label class="select-chip"><input type="checkbox" ${state.sessionDrillIds.includes(x.id)?"checked":""} onchange="toggleSessionDrill('${x.id}',this.checked)"> Add</label></td><td><button class="drill-name-btn" onclick="setActiveDrill('${x.id}', true)">${esc(x.name)}</button></td><td><input style="width:76px" value="${esc(x.timer || "1")}" onchange="editDrill('${x.id}','timer',this.value); state.drills.find(d=>d.id==='${x.id}').durationSeconds=parseDuration(this.value); save(); renderPreservingPosition();"></td><td><input style="width:70px" placeholder="Count" value="${esc(x.count || "")}" onchange="editDrill('${x.id}','count',this.value)"></td><td>${x.videoLink ? `<a class="btn light" href="${esc(x.videoLink)}" target="_blank">Video</a>` : ""}</td></tr>`).join("")}`;
-          }).join("")}
-          </tbody></table></div>
-          <div class="muted" style="padding-top:10px">${d.length} drills available from Jordan 2.0 and the All Drills sheet.</div>
+          <div class="category-card-grid">
+            ${groupedDrills(d).map(([category, drills], index) => categoryCardMarkup(category, drills, index)).join("") || `<div class="category-empty">No drill categories match your search.</div>`}
+          </div>
+          <div class="muted" style="padding-top:10px">${d.length} of ${allPlayerDrills.length} drills shown from Jordan 2.0 and the All Drills sheet.</div>
         </section>`;
       }
 
@@ -1553,35 +1637,15 @@
       }
       function renderHomeTimer() { const el = document.getElementById("timerCard"); if (el) el.innerHTML = timerMarkup(); }
       function avg(d) { return d.length ? (d.reduce((s,x)=>s+Number(x.rating||0),0)/d.length).toFixed(1) : "0"; }
-      function filterDrillRows(value) {
-        const query = String(value || "").trim().toLowerCase();
-        let currentCategory = null;
-        let currentCategoryHasRows = false;
-        document.querySelectorAll(".drill-selector tbody tr").forEach(row => {
-          if (row.dataset.categoryRow) {
-            if (currentCategory) currentCategory.style.display = currentCategoryHasRows ? "" : "none";
-            currentCategory = row;
-            currentCategoryHasRows = false;
-            return;
-          }
-          const visible = !query || (row.dataset.drillName || "").includes(query);
-          row.style.display = visible ? "" : "none";
-          if (visible) currentCategoryHasRows = true;
-        });
-        if (currentCategory) currentCategory.style.display = currentCategoryHasRows ? "" : "none";
-      }
       function renderPreservingPosition() {
         const top = window.scrollY;
-        const selectorTop = document.querySelector(".drill-selector")?.scrollTop || 0;
         const search = document.getElementById("drillSearch")?.value || "";
+        state.drillSearch = search;
         render();
         requestAnimationFrame(() => {
           window.scrollTo(0, top);
           const input = document.getElementById("drillSearch");
           if (input) input.value = search;
-          if (search) filterDrillRows(search);
-          const selector = document.querySelector(".drill-selector");
-          if (selector) selector.scrollTop = selectorTop;
         });
       }
       function toggleDrill(id, checked) { const d = state.drills.find(x => x.id === id); if (d) d.completed = checked; save(); render(); }
