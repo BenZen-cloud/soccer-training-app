@@ -1,6 +1,7 @@
 export type Drill = {
   id: string;
   name: string;
+  category?: string;
   videoLink: string;
   notes: string;
   completed: boolean;

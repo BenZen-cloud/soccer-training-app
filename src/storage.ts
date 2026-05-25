@@ -35,14 +35,28 @@ export function loadState(): TrackerState {
 }
 
 function mergeSampleDrills(state: TrackerState): TrackerState {
-  const drills = Array.isArray(state.drills) ? [...state.drills] : [];
+  const sampleKeys = new Set(sampleDrills.map(drillSeedKey));
+  const drills = (Array.isArray(state.drills) ? [...state.drills] : []).filter((drill) => {
+    const fromAllDrillsSheet = drill.id.startsWith("all-drill") || drill.notes?.includes("All Drills sheet");
+    return !fromAllDrillsSheet || sampleKeys.has(drillSeedKey(drill));
+  });
   const players = Array.isArray(state.players) ? state.players.map((player) => ({ ...player, drillIds: [...(player.drillIds || [])] })) : [];
-  const existing = new Set(drills.map(drillSeedKey));
+  const existing = new Map(drills.map((drill) => [drillSeedKey(drill), drill]));
   const usedIds = new Set(drills.map((drill) => drill.id));
+  const keptIds = new Set(drills.map((drill) => drill.id));
+
+  players.forEach((player) => {
+    player.drillIds = player.drillIds.filter((id) => keptIds.has(id));
+  });
 
   sampleDrills.forEach((sample) => {
     const key = drillSeedKey(sample);
-    if (existing.has(key)) return;
+    const existingDrill = existing.get(key);
+    if (existingDrill) {
+      existingDrill.videoLink = sample.videoLink || existingDrill.videoLink;
+      existingDrill.category = sample.category || existingDrill.category;
+      return;
+    }
     let id = sample.id;
     let index = 1;
     while (usedIds.has(id)) id = `${sample.id}-${index++}`;
@@ -51,7 +65,7 @@ function mergeSampleDrills(state: TrackerState): TrackerState {
     players.forEach((player) => {
       if (!player.drillIds.includes(id)) player.drillIds.push(id);
     });
-    existing.add(key);
+    existing.set(key, sample);
   });
 
   return { ...state, drills, players };

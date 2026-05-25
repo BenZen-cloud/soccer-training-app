@@ -198,7 +198,7 @@ function drillCategoryKey(name: string) {
 }
 
 function getDrillCategory(drill: Drill) {
-  return drillCategoryByName[drillCategoryKey(drill.name)] ?? "Other Drills";
+  return drill.category || drillCategoryByName[drillCategoryKey(drill.name)] || "Other Drills";
 }
 
 function groupDrillsByCategory(drills: Drill[]) {
