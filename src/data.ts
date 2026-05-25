@@ -732,8 +732,7 @@ export const sampleDrills: Drill[] = [
 ];
 
 function drillSeedKey(drill: { name: string; videoLink?: string }) {
-  const id = youtubeIdFromLink(drill.videoLink || "");
-  return id ? `video:${id}` : `name:${drill.name.toLowerCase().replace(/\s+/g, " ").trim()}`;
+  return `name:${drill.name.toLowerCase().replace(/\s+/g, " ").trim()}`;
 }
 
 function youtubeIdFromLink(url: string) {

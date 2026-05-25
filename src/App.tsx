@@ -214,6 +214,77 @@ function groupDrillsByCategory(drills: Drill[]) {
   });
 }
 
+const eliteTrainingPlaylistNames = [
+  "HOW TO DO THE STOP & GO",
+  "HOW TO DO THE SMILEY FACE",
+  "HOW TO DO THE BOX STEP",
+  "HOW TO DO THE BOX STEP (Right)",
+  "HOW TO DO THE BOX STEP (Left)",
+  "HOW TO DO THE SCISSOR STEP (LEFT)",
+  "HOW TO DO THE SCISSOR STEP (RIGHT)",
+  "HOW TO DO THE V COMBO (LEFT)",
+  "HOW TO DO THE V COMBO (RIGHT)",
+  "HOW TO DO THE V COMBO",
+  "HOW TO DO THE ALL OUTSIDE",
+  "HOW TO DO THE MESSI SLIDE",
+  "Messie slide",
+  "HOW TO DO THE V TURN COMBO",
+  "HOW TO DO THE SOLE TURN COMBO",
+  "HOW TO DO THE MARADONA TURN",
+  "MARADONA TURN",
+  "HOW TO DO THE FAKE SHOT, PULL",
+  "Fake shot pull",
+  "HOW TO DO THE BODY FAKE COMBO",
+  "Body fake combo",
+  "HOW TO SLIDE & ROLL (Left)",
+  "HOW TO SLIDE & ROLL (Right)",
+  "HOW TO SLIDE & ROLL",
+  "HOW TO DO IN & OUT BOXES",
+  "HOW TO DO THE V TURN",
+  "How TO DO V TURN",
+  "HOW TO BOX STEP",
+  "Learning the Series: Part 1",
+  "Learning the Series: Part 2",
+  "Learning the Series: Part 3",
+  "Learning the Series: Part 4",
+];
+
+const thousandTouchesPlaylistNames = [
+  "HOW TO DO THE V INSIDE",
+  "HOW TO DO THE PUSH & PULL",
+  "HOW TO DO THE CROSSOVER PUSH",
+  "HOW TO DO THE TRIANGLE STEP",
+  "HOW TO DO IN & OUT BOXES",
+  "HOW TO BOX STEP",
+  "HOW TO DO HOT STEPPERS",
+  "HOW TO SLIDE & ROLL (Left)",
+  "HOW TO SLIDE & ROLL (Right)",
+  "HOW TO DO THE SOLE TURN COMBO (Pull BackTurn)",
+  "HOW TO DO THE RONALDO COMBO",
+  "HOW TO DO THE STEP OVER INSIDE",
+  "HOW TO DO THE BODY FAKE COMBO",
+  "HOW TO DO THE OUTSIDE V STEP",
+  "HOW TO DO THE IN & OUT",
+  "HOW TO DO THE SLIDE",
+  "HOW TO DO THE SCISSOR STEP (LEFT)",
+  "HOW TO DO THE SCISSOR STEP (RIGHT)",
+];
+
+function getDrillsByNames(drills: Drill[], names: string[]) {
+  const exactNameKey = (name: string) => name.toLowerCase().replace(/&/g, "and").replace(/\byoutube\b/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const byExactName = new Map(drills.map((drill) => [exactNameKey(drill.name), drill]));
+  const byLooseName = new Map(drills.map((drill) => [drillCategoryKey(drill.name), drill]));
+  const seen = new Set<string>();
+  return names
+    .map((name) => byExactName.get(exactNameKey(name)) ?? byLooseName.get(drillCategoryKey(name)))
+    .filter((drill): drill is Drill => Boolean(drill))
+    .filter((drill) => {
+      if (seen.has(drill.id)) return false;
+      seen.add(drill.id);
+      return true;
+    });
+}
+
 function App() {
   const [state, setState] = useState<TrackerState>(() => loadState());
   const [page, setPage] = useState<Page>("Home");
@@ -464,6 +535,28 @@ function App() {
               setPendingCountSave(false);
               setResting(false);
             }}
+            onUseRecommendedPlaylist={(drillIds) => {
+              const nextIds = drillIds.filter((id) => state.drills.some((drill) => drill.id === id));
+              const first = state.drills.find((drill) => drill.id === nextIds[0]);
+              setState((current) => ({
+                ...current,
+                players: current.players.map((player) =>
+                  player.id === selectedPlayerId
+                    ? { ...player, drillIds: Array.from(new Set([...player.drillIds, ...nextIds])) }
+                    : player
+                ),
+              }));
+              setSessionDrillIds(nextIds);
+              setSelectedVideoDrillId(first?.id ?? "");
+              if (first) {
+                const nextDuration = first.durationSeconds || duration;
+                setDuration(nextDuration);
+                setSeconds(nextDuration);
+              }
+              setRunning(false);
+              setPendingCountSave(false);
+              setResting(false);
+            }}
             onStartPlaylist={() => {
               const first = orderedSessionDrills[0] ?? selectedVideoDrill ?? playerDrills.find((drill) => drill.videoLink);
               if (!first) return;
@@ -593,6 +686,7 @@ function HomePage(props: {
   onToggleSessionDrill: (id: string, checked: boolean) => void;
   onMoveSessionDrill: (id: string, direction: -1 | 1) => void;
   onClearPlaylist: () => void;
+  onUseRecommendedPlaylist: (drillIds: string[]) => void;
   onStartPlaylist: () => void;
   onUpdateDrillDuration: (drill: Drill, minutes: number) => void;
   onSaveCountForSession: () => void;
@@ -612,8 +706,26 @@ function HomePage(props: {
   const playlistProgress = playlistDrills.length ? Math.round((playlistCompletedCount / playlistDrills.length) * 100) : 0;
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
+  const [closedCategories, setClosedCategories] = useState<Record<string, boolean>>({});
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
+  const recommendedPlaylists = useMemo(
+    () =>
+      [
+        { label: "Elite Training Playlist", detail: "Play this playlist", categories: [] },
+        { label: "1000 Touches Drills", detail: "Play this playlist", categories: [] },
+        { label: "Juggling", detail: "Control challenge", categories: ["Beginner Juggling", "Advance Juggling"] },
+      ].map((preset) => ({
+        ...preset,
+        drills:
+          preset.label === "Elite Training Playlist"
+            ? getDrillsByNames(props.allDrills, eliteTrainingPlaylistNames)
+            : preset.label === "1000 Touches Drills"
+              ? getDrillsByNames(props.allDrills, thousandTouchesPlaylistNames)
+            : props.drills.filter((drill) => preset.categories.includes(getDrillCategory(drill)) && drill.videoLink).slice(0, 5),
+      })),
+    [props.allDrills, props.drills]
+  );
   return (
     <div className="space-y-5">
       <section className="flex items-center gap-6">
@@ -774,6 +886,22 @@ function HomePage(props: {
             </button>
           </div>
         </div>
+        <div className="mb-3 grid gap-2 sm:grid-cols-3">
+          {recommendedPlaylists.map((playlist) => (
+            <button
+              key={playlist.label}
+              type="button"
+              onClick={() => props.onUseRecommendedPlaylist(playlist.drills.map((drill) => drill.id))}
+              disabled={!playlist.drills.length}
+              className="focus-ring rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left hover:border-field hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="block text-sm font-black text-field">{playlist.label}</span>
+              <span className="block text-xs font-semibold text-slate-600">
+                {playlist.drills.length} drills - {playlist.detail}
+              </span>
+            </button>
+          ))}
+        </div>
         <label className="mb-3 grid gap-1 text-sm font-bold text-slate-700">
           Search drills
           <input
@@ -801,10 +929,19 @@ function HomePage(props: {
                 <Fragment key={category}>
                   <tr className="border-b border-green-100 bg-green-50">
                     <td colSpan={6} className="px-2 py-2 text-[11px] font-black uppercase tracking-wide text-field">
-                      {category} <span className="text-slate-500">({drills.length})</span>
+                      <button
+                        type="button"
+                        onClick={() => setClosedCategories((current) => ({ ...current, [category]: !current[category] }))}
+                        className="flex w-full items-center justify-between rounded px-1 py-1 text-left font-black uppercase tracking-wide text-field hover:bg-green-100"
+                      >
+                        <span>
+                          {category} <span className="text-slate-500">({drills.length})</span>
+                        </span>
+                        <span className="text-sm">{closedCategories[category] ? "v" : "^"}</span>
+                      </button>
                     </td>
                   </tr>
-                  {drills.map((drill) => (
+                  {!closedCategories[category] && drills.map((drill) => (
                     <tr key={drill.id} className="border-b border-slate-100">
                       <td className="px-2 py-1.5 font-bold">{visibleDrills.indexOf(drill) + 1}</td>
                       <td className="px-2 py-1.5">

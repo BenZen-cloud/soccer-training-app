@@ -72,8 +72,7 @@ function mergeSampleDrills(state: TrackerState): TrackerState {
 }
 
 function drillSeedKey(drill: Pick<Drill, "name" | "videoLink">) {
-  const id = String(drill.videoLink || "").match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/)?.[1];
-  return id ? `video:${id}` : `name:${drill.name.toLowerCase().replace(/\s+/g, " ").trim()}`;
+  return `name:${drill.name.toLowerCase().replace(/\s+/g, " ").trim()}`;
 }
 
 function parseStoredDuration(value: unknown) {

@@ -132,6 +132,14 @@
       .drill-selector .drills-table input { padding:5px 7px; font-size:13px; }
       .drill-selector .category-row td { background:#edf8f0; color:#15803d; font-size:12px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
       .drill-selector .category-row span { color:#64746a; }
+      .category-toggle { appearance:none; border:0; background:transparent; width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 2px; color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; }
+      .category-toggle:hover { background:#dff3e6; border-radius:6px; }
+      .category-toggle .arrow { color:#15803d; font-size:14px; line-height:1; }
+      .recommended-playlists { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 12px; }
+      .recommended-card { text-align:left; border:1px solid #bbdfc8; background:#f0f9f3; border-radius:10px; padding:9px 10px; cursor:pointer; color:#17211b; }
+      .recommended-card:hover { border-color:#15803d; background:#e4f7eb; }
+      .recommended-card strong { display:block; color:#15803d; font-size:14px; line-height:1.1; }
+      .recommended-card span { display:block; margin-top:3px; color:#64746a; font-size:12px; font-weight:700; line-height:1.2; }
       .drill-name-btn { width:100%; text-align:left; padding:6px 8px; border-radius:6px; border:1px solid #d3ddd6; background:#fff; color:#17211b; font-weight:800; cursor:pointer; }
       .select-chip { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:12px; font-weight:800; }
       .select-chip input { width:auto; }
@@ -190,6 +198,7 @@
         .home, .stats, .form, .two { grid-template-columns: 1fr; }
         .timer-progress, .notes-rating, .video-controls { grid-template-columns:1fr; }
         .instruction-grid { grid-template-columns:1fr; }
+        .recommended-playlists { grid-template-columns:1fr; }
         .instruction-pill { display:none; }
         .instruction-title { font-size:25px; }
         .timer-side, .notes-rating > div:first-child { border-right:0; padding-right:0; }
@@ -233,6 +242,7 @@
         seconds: 60,
         duration: 60,
         running: false,
+        closedCategories: {},
         players: [{ id: "player-jordan", name: "Jordan", notes: "Sample player created from the Jordan 2.0 sheet.", drillIds: [], photoDataUrl: defaultPlayerAvatar }],
         sessions: [{ id: "session-1", playerId: "player-jordan", date: "2026-05-09", minutes: 35, completedDrills: 10, notes: "Started with ball mastery and finishing work." }],
         drills: [
@@ -397,6 +407,16 @@
         },
         {
           "name": "HOW TO SLIDE & ROLL",
+          "videoLink": "https://www.youtube.com/watch?v=P4rJS_ZNCJY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=12",
+          "category": "2 Cone Drills"
+        },
+        {
+          "name": "HOW TO SLIDE & ROLL (Left)",
+          "videoLink": "https://www.youtube.com/watch?v=P4rJS_ZNCJY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=12",
+          "category": "2 Cone Drills"
+        },
+        {
+          "name": "HOW TO SLIDE & ROLL (Right)",
           "videoLink": "https://www.youtube.com/watch?v=P4rJS_ZNCJY&list=PLsRSijrCyTQfqh2x_4EqC_DPWETiR9PSo&index=12",
           "category": "2 Cone Drills"
         },
@@ -864,11 +884,49 @@
       function youtubeId(url) {
         return String(url || "").match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/)?.[1] || "";
       }
+      function freshStarter() {
+        const next = JSON.parse(JSON.stringify(starter));
+        next.players[0].drillIds = next.drills.map(drill => drill.id);
+        next.sessionDrillIds = next.drills.slice(0, 5).map(drill => drill.id);
+        next.selectedVideoDrill = next.sessionDrillIds[0] || next.drills[0]?.id || "";
+        return next;
+      }
+      function readSavedState() {
+        try {
+          const saved = localStorage.getItem(key);
+          return saved ? JSON.parse(saved) : freshStarter();
+        } catch {
+          return freshStarter();
+        }
+      }
+      function writeSavedState() {
+        try {
+          localStorage.setItem(key, JSON.stringify(state));
+        } catch {
+          // The tracker keeps working even when the browser blocks local storage.
+        }
+      }
+      function resetTracker() {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+          // Ignore blocked storage and rebuild the tracker in memory.
+        }
+        state = freshStarter();
+        normalizeState();
+        save();
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      let state = readSavedState();
+      let tick;
+      let restTick;
       function normalizeState() {
         if (!state || typeof state !== "object") state = freshStarter();
         if (!Array.isArray(state.drills) || !state.drills.length) state.drills = freshStarter().drills;
         if (!Array.isArray(state.players) || !state.players.length) state.players = freshStarter().players;
         if (!Array.isArray(state.sessions)) state.sessions = [];
+        mergeAllDrillsFromSheet();
         if (!["Home", "Players", "Drills", "Training Sessions", "Progress"].includes(state.page)) state.page = "Home";
         state.players.forEach(player => {
           if (!Array.isArray(player.drillIds)) player.drillIds = [];
@@ -877,13 +935,33 @@
         });
         if (!state.players.some(player => player.id === state.selectedPlayer)) state.selectedPlayer = state.players[0]?.id || "player-jordan";
         if (!Array.isArray(state.sessionDrillIds)) state.sessionDrillIds = [];
+        if (!state.closedCategories || typeof state.closedCategories !== "object") state.closedCategories = {};
         state.sessionDrillIds = state.sessionDrillIds.filter(id => state.drills.some(drill => drill.id === id));
         if (state.selectedVideoDrill && !state.drills.some(drill => drill.id === state.selectedVideoDrill)) state.selectedVideoDrill = state.sessionDrillIds[0] || "";
+      }
+      function drillSeedKey(drill) {
+        return `name:${String(drill?.name || "").toLowerCase().replace(/\s+/g, " ").trim()}`;
       }
       function mergeAllDrillsFromSheet() {
         if (!Array.isArray(state.drills)) state.drills = [];
         if (!Array.isArray(state.players)) state.players = [];
-        const seedKeys = new Set(allDrillSeeds.map(drillSeedKey));
+        const drillSeeds = [
+          ...freshStarter().drills,
+          ...allDrillSeeds.map((seed, index) => ({
+            id: `all-drill-${index + 1}`,
+            name: seed.name,
+            category: seed.category,
+            videoLink: seed.videoLink,
+            completed: false,
+            rating: 1,
+            timer: "1",
+            durationSeconds: 60,
+            notes: "Available drill from All Drills sheet.",
+            count: "",
+            countHistory: []
+          }))
+        ];
+        const seedKeys = new Set(drillSeeds.map(drillSeedKey));
         state.drills = state.drills.filter(drill => {
           const fromAllDrillsSheet = String(drill.id || "").startsWith("all-drill") || String(drill.notes || "").includes("All Drills sheet");
           return !fromAllDrillsSheet || seedKeys.has(drillSeedKey(drill));
@@ -897,7 +975,7 @@
         const existing = new Set(state.drills.map(drillSeedKey));
         const usedIds = new Set(state.drills.map(d => d.id));
         let added = 0;
-        allDrillSeeds.forEach((seed, index) => {
+        drillSeeds.forEach((seed, index) => {
           const key = drillSeedKey(seed);
           const existingDrill = state.drills.find(drill => drillSeedKey(drill) === key);
           if (existingDrill) {
@@ -905,11 +983,11 @@
             existingDrill.category = seed.category || existingDrill.category;
             return;
           }
-          let id = `all-drill-${index + 1}`;
+          let id = seed.id || `all-drill-${index + 1}`;
           let n = 1;
-          while (usedIds.has(id)) id = `all-drill-${index + 1}-${n++}`;
+          while (usedIds.has(id)) id = `${seed.id || `all-drill-${index + 1}`}-${n++}`;
           usedIds.add(id);
-          const drill = { id, name: seed.name, category: seed.category, videoLink: seed.videoLink, completed: false, rating: 1, timer: "1", durationSeconds: 60, notes: "Available drill from All Drills sheet.", count: "", countHistory: [] };
+          const drill = { ...seed, id, completed: false, rating: seed.rating || 1, timer: seed.timer || "1", durationSeconds: seed.durationSeconds || 60, notes: seed.notes || "Available drill from All Drills sheet.", count: seed.count || "", countHistory: Array.isArray(seed.countHistory) ? seed.countHistory : [] };
           state.drills.push(drill);
           state.players.forEach(p => {
             if (!Array.isArray(p.drillIds)) p.drillIds = [];
@@ -1049,6 +1127,116 @@
           const bi = drillCategoryOrder.indexOf(b);
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b);
         });
+      }
+      const eliteTrainingPlaylistNames = [
+        "HOW TO DO THE STOP & GO",
+        "HOW TO DO THE SMILEY FACE",
+        "HOW TO DO THE BOX STEP",
+        "HOW TO DO THE BOX STEP (Right)",
+        "HOW TO DO THE BOX STEP (Left)",
+        "HOW TO DO THE SCISSOR STEP (LEFT)",
+        "HOW TO DO THE SCISSOR STEP (RIGHT)",
+        "HOW TO DO THE V COMBO (LEFT)",
+        "HOW TO DO THE V COMBO (RIGHT)",
+        "HOW TO DO THE V COMBO",
+        "HOW TO DO THE ALL OUTSIDE",
+        "HOW TO DO THE MESSI SLIDE",
+        "Messie slide",
+        "HOW TO DO THE V TURN COMBO",
+        "HOW TO DO THE SOLE TURN COMBO",
+        "HOW TO DO THE MARADONA TURN",
+        "MARADONA TURN",
+        "HOW TO DO THE FAKE SHOT, PULL",
+        "Fake shot pull",
+        "HOW TO DO THE BODY FAKE COMBO",
+        "Body fake combo",
+        "HOW TO SLIDE & ROLL (Left)",
+        "HOW TO SLIDE & ROLL (Right)",
+        "HOW TO SLIDE & ROLL",
+        "HOW TO DO IN & OUT BOXES",
+        "HOW TO DO THE V TURN",
+        "How TO DO V TURN",
+        "HOW TO BOX STEP",
+        "Learning the Series: Part 1",
+        "Learning the Series: Part 2",
+        "Learning the Series: Part 3",
+        "Learning the Series: Part 4"
+      ];
+      const thousandTouchesPlaylistNames = [
+        "HOW TO DO THE V INSIDE",
+        "HOW TO DO THE PUSH & PULL",
+        "HOW TO DO THE CROSSOVER PUSH",
+        "HOW TO DO THE TRIANGLE STEP",
+        "HOW TO DO IN & OUT BOXES",
+        "HOW TO BOX STEP",
+        "HOW TO DO HOT STEPPERS",
+        "HOW TO SLIDE & ROLL (Left)",
+        "HOW TO SLIDE & ROLL (Right)",
+        "HOW TO DO THE SOLE TURN COMBO (Pull BackTurn)",
+        "HOW TO DO THE RONALDO COMBO",
+        "HOW TO DO THE STEP OVER INSIDE",
+        "HOW TO DO THE BODY FAKE COMBO",
+        "HOW TO DO THE OUTSIDE V STEP",
+        "HOW TO DO THE IN & OUT",
+        "HOW TO DO THE SLIDE",
+        "HOW TO DO THE SCISSOR STEP (LEFT)",
+        "HOW TO DO THE SCISSOR STEP (RIGHT)"
+      ];
+      function drillsByNames(list, names) {
+        const exactNameKey = name => String(name || "").toLowerCase().replace(/&/g, "and").replace(/\byoutube\b/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+        const byExactName = new Map(list.map(drill => [exactNameKey(drill.name), drill]));
+        const byLooseName = new Map(list.map(drill => [drillCategoryKey(drill.name), drill]));
+        const seen = new Set();
+        return names.map(name => byExactName.get(exactNameKey(name)) || byLooseName.get(drillCategoryKey(name))).filter(Boolean).filter(drill => {
+          if (seen.has(drill.id)) return false;
+          seen.add(drill.id);
+          return true;
+        });
+      }
+      const recommendedPlaylistPresets = {
+        elite: { label: "Elite Training Playlist", detail: "Play this playlist", names: eliteTrainingPlaylistNames },
+        touches: { label: "1000 Touches Drills", detail: "Play this playlist", names: thousandTouchesPlaylistNames },
+        juggling: { label: "Juggling", detail: "Control challenge", categories: ["Beginner Juggling", "Advance Juggling"] }
+      };
+      function recommendedPlaylistItems(key) {
+        const preset = recommendedPlaylistPresets[key];
+        if (!preset) return [];
+        if (preset.names) return drillsByNames(state.drills, preset.names);
+        return playerDrills()
+          .filter(drill => preset.categories.includes(drillCategory(drill)) && drill.videoLink)
+          .slice(0, 5);
+      }
+      function recommendedPlaylistMarkup() {
+        return `<div class="recommended-playlists">${Object.entries(recommendedPlaylistPresets).map(([key, preset]) => {
+          const drills = recommendedPlaylistItems(key);
+          return `<button class="recommended-card" type="button" onclick="applyRecommendedPlaylist('${key}')" ${drills.length ? "" : "disabled"}><strong>${esc(preset.label)}</strong><span>${drills.length} drills - ${esc(preset.detail)}</span></button>`;
+        }).join("")}</div>`;
+      }
+      function applyRecommendedPlaylist(key) {
+        const drills = recommendedPlaylistItems(key);
+        state.sessionDrillIds = drills.map(drill => drill.id);
+        const player = selectedPlayer();
+        if (player) player.drillIds = Array.from(new Set([...(player.drillIds || []), ...state.sessionDrillIds]));
+        const first = drills[0];
+        state.selectedVideoDrill = first?.id || "";
+        if (first) {
+          state.duration = Number(first.durationSeconds || 60);
+          state.seconds = state.duration;
+        }
+        state.running = false;
+        state.resting = false;
+        state.pendingCountSave = false;
+        clearInterval(tick);
+        clearInterval(restTick);
+        stopVideoNow();
+        save();
+        renderPreservingPosition();
+      }
+      function toggleCategory(category) {
+        state.closedCategories = state.closedCategories || {};
+        state.closedCategories[category] = !state.closedCategories[category];
+        save();
+        renderPreservingPosition();
       }
 
       function timer(on, skipRender = false, skipVideoStart = false) {
@@ -1301,11 +1489,15 @@
             <div><div class="panel-title">Drills</div><div class="muted">Select drills here to add them to the playlist.</div></div>
             <div style="display:flex;align-items:center;gap:8px"><div style="border:1px solid #bbdfc8;background:#f0f9f3;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#15803d;text-transform:uppercase">Selected</span><strong style="display:block;font-size:20px;line-height:1;color:#15803d">${state.sessionDrillIds.length}</strong></div><div style="border:1px solid #dbe3dd;background:#f8fbf9;border-radius:6px;padding:6px 10px;text-align:center"><span style="display:block;font-size:10px;font-weight:900;color:#64746a;text-transform:uppercase">Minutes</span><strong style="display:block;font-size:20px;line-height:1;color:#17211b">${Math.round(sessionDrills().reduce((sum, drill) => sum + (drill.durationSeconds || 60), 0) / 60)}</strong></div><button class="btn light" onclick="setPage('Drills')">+ Add Drill</button></div>
           </div>
+          ${recommendedPlaylistMarkup()}
           <label style="margin-bottom:10px">Search drills
             <input id="drillSearch" type="search" placeholder="Type a drill name..." oninput="filterDrillRows(this.value)">
           </label>
           <div class="table-scroll drill-selector"><table class="drills-table"><thead><tr><th>#</th><th>Playlist</th><th>Drill</th><th>Time</th><th>Count</th><th>Video</th></tr></thead><tbody>
-          ${groupedDrills(d).map(([category, drills]) => `<tr class="category-row" data-category-row="true"><td colspan="6">${esc(category)} <span>(${drills.length})</span></td></tr>${drills.map(x => `<tr data-drill-name="${esc(x.name.toLowerCase())}"><td><strong>${d.indexOf(x)+1}</strong></td><td><label class="select-chip"><input type="checkbox" ${state.sessionDrillIds.includes(x.id)?"checked":""} onchange="toggleSessionDrill('${x.id}',this.checked)"> Add</label></td><td><button class="drill-name-btn" onclick="setActiveDrill('${x.id}', true)">${esc(x.name)}</button></td><td><input style="width:76px" value="${esc(x.timer || "1")}" onchange="editDrill('${x.id}','timer',this.value); state.drills.find(d=>d.id==='${x.id}').durationSeconds=parseDuration(this.value); save(); renderPreservingPosition();"></td><td><input style="width:70px" placeholder="Count" value="${esc(x.count || "")}" onchange="editDrill('${x.id}','count',this.value)"></td><td>${x.videoLink ? `<a class="btn light" href="${esc(x.videoLink)}" target="_blank">Video</a>` : ""}</td></tr>`).join("")}`).join("")}
+          ${groupedDrills(d).map(([category, drills]) => {
+            const closed = state.closedCategories?.[category];
+            return `<tr class="category-row" data-category-row="true"><td colspan="6"><button class="category-toggle" onclick="toggleCategory('${esc(category)}')"><span>${esc(category)} <span>(${drills.length})</span></span><span class="arrow">${closed ? "v" : "^"}</span></button></td></tr>${closed ? "" : drills.map(x => `<tr data-drill-name="${esc(x.name.toLowerCase())}"><td><strong>${d.indexOf(x)+1}</strong></td><td><label class="select-chip"><input type="checkbox" ${state.sessionDrillIds.includes(x.id)?"checked":""} onchange="toggleSessionDrill('${x.id}',this.checked)"> Add</label></td><td><button class="drill-name-btn" onclick="setActiveDrill('${x.id}', true)">${esc(x.name)}</button></td><td><input style="width:76px" value="${esc(x.timer || "1")}" onchange="editDrill('${x.id}','timer',this.value); state.drills.find(d=>d.id==='${x.id}').durationSeconds=parseDuration(this.value); save(); renderPreservingPosition();"></td><td><input style="width:70px" placeholder="Count" value="${esc(x.count || "")}" onchange="editDrill('${x.id}','count',this.value)"></td><td>${x.videoLink ? `<a class="btn light" href="${esc(x.videoLink)}" target="_blank">Video</a>` : ""}</td></tr>`).join("")}`;
+          }).join("")}
           </tbody></table></div>
           <div class="muted" style="padding-top:10px">${d.length} drills available from Jordan 2.0 and the All Drills sheet.</div>
         </section>`;
