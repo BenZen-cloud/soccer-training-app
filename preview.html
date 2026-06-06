@@ -84,6 +84,10 @@
       .video-fallback.playing { display:grid; background:rgba(10,20,14,.22); }
       .video-fallback.playing span { background:rgba(0,0,0,.58); border-radius:999px; padding:8px 12px; font-size:13px; }
       .video-fallback.playing .play-dot { display:none; }
+      .video-countdown-overlay { position:absolute; top:14px; right:14px; z-index:6; pointer-events:none; display:none; min-width:118px; border-radius:999px; background:rgba(8,34,21,.86); color:#fff; box-shadow:0 10px 28px rgba(0,0,0,.28); padding:10px 14px; text-align:center; border:1px solid rgba(255,255,255,.28); }
+      .video-countdown-overlay.show { display:block; }
+      .video-countdown-overlay span { display:block; color:#bdf7cf; font-size:10px; font-weight:900; line-height:1; letter-spacing:.08em; text-transform:uppercase; }
+      .video-countdown-overlay strong { display:block; margin-top:3px; font-size:24px; line-height:1; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:.03em; }
       .video-title { position:absolute; left:18px; right:18px; bottom:14px; z-index:1; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.65); font-weight:900; font-size:20px; }
       .play-dot { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.92); color:#1f7a24; font-size:42px; margin:0 auto 12px; }
       .timer { background: #0f172a; color: #fff; text-align: center; border-radius: 8px; font-size: 48px; font-weight: 800; padding: 24px; margin: 16px 0; font-variant-numeric: tabular-nums; }
@@ -161,12 +165,13 @@
       .notes-rating { display:grid; grid-template-columns:1.2fr .9fr; gap:28px; }
       .notes-rating > div:first-child { border-right:1px solid #dbe3dd; padding-right:28px; }
       .session-stars { color:#a7adb0; font-size:50px; letter-spacing:8px; margin:16px 0 24px; }
-      .video-controls { display:grid; grid-template-columns: 300px minmax(180px, .8fr) minmax(260px, 1.2fr); gap:12px; margin-bottom:16px; align-items:start; }
+      .video-controls { display:grid; grid-template-columns: minmax(220px, 340px) 1fr; gap:12px; margin-bottom:16px; align-items:start; }
       .player-photo-card { grid-row:1 / span 2; align-self:start; display:grid; gap:7px; }
       .player-photo-box { aspect-ratio:1/1; border:1px dashed #aebdb4; border-radius:8px; background:#f4f7f5; overflow:hidden; display:grid; place-items:center; color:#64746a; font-size:12px; font-weight:800; text-align:center; padding:8px; cursor:pointer; }
       .player-photo-card input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
       .video-stage { grid-column:1/-1; width:min(100%, 820px); justify-self:center; }
       .training-instructions { margin:0 0 14px; overflow:hidden; border:2px solid #bbdfc8; background:#eefbf2; border-radius:18px; box-shadow:0 12px 30px rgba(21,128,61,.12); font-family:"Fredoka", Inter, ui-sans-serif, system-ui, sans-serif; }
+      .video-stage > .training-instructions { display:none; }
       .training-instructions-inner { position:relative; display:grid; gap:14px; padding:16px; color:#17211b; }
       .training-instructions-inner::before { content:""; position:absolute; left:16px; right:16px; top:50%; height:1px; background:rgba(255,255,255,.82); pointer-events:none; }
       .training-instructions-inner::after { content:""; position:absolute; top:0; bottom:0; left:50%; width:1px; background:rgba(255,255,255,.82); pointer-events:none; }
@@ -192,6 +197,19 @@
       .timer-summary span { display:block; color:#64746a; font-size:10px; font-weight:800; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
       .timer-summary strong { display:block; color:#17211b; font-size:16px; line-height:1.1; margin-top:2px; }
       .timer-summary .mini-progress { grid-column:1/-1; padding:0; border:0; background:transparent; }
+      .timer-strip { margin:10px auto 0; width:min(100%, 820px); padding:8px 10px; border-radius:10px; }
+      .timer-strip .timer-line { display:grid; grid-template-columns:auto minmax(86px, 1fr) auto auto; align-items:center; gap:8px; }
+      .timer-strip .timer-big { margin:0; font-size:22px; white-space:nowrap; }
+      .timer-strip .timer-selects { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+      .timer-strip .timer-selects label { margin:0; max-width:none; font-size:11px; }
+      .timer-strip .timer-selects select, .timer-strip .timer-selects input { width:74px; padding:5px 7px; font-size:12px; }
+      .timer-strip .buttons { display:flex; gap:5px; }
+      .timer-strip .btn { padding:6px 9px; font-size:12px; }
+      .timer-strip .countdown-bar { margin:0; height:8px; }
+      .timer-strip .timer-summary { margin:7px 0 0; padding-top:7px; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); }
+      .timer-strip .timer-summary div { padding:4px 6px; }
+      .timer-strip .timer-summary strong { font-size:13px; }
+      .timer-strip .count-history { margin-top:6px; }
       .count-history { margin-top:10px; display:flex; gap:6px; flex-wrap:wrap; font-size:12px; color:#435047; }
       .count-history span { border:1px solid #dbe3dd; border-radius:999px; padding:4px 8px; background:#fff; }
       .playlist { display:grid; gap:8px; }
@@ -216,6 +234,9 @@
         .instruction-pill { display:none; }
         .instruction-title { font-size:25px; }
         .timer-side, .notes-rating > div:first-child { border-right:0; padding-right:0; }
+        .timer-strip .timer-line { grid-template-columns:1fr; }
+        .timer-strip .buttons { display:grid; grid-template-columns:repeat(3, 1fr); }
+        .timer-strip .timer-selects select, .timer-strip .timer-selects input { width:100%; }
         .timer-big { font-size:54px; }
         .profile { align-items:flex-start; }
         .jersey { width:86px; height:86px; }
@@ -251,6 +272,7 @@
         sessionDrillIds: [],
         pendingCountSave: false,
         resting: false,
+        sessionComplete: false,
         restSeconds: 30,
         restDuration: 30,
         seconds: 60,
@@ -936,6 +958,7 @@
       let state = readSavedState();
       let tick;
       let restTick;
+      let companionVideoWindow = null;
       function normalizeState() {
         if (!state || typeof state !== "object") state = freshStarter();
         if (!Array.isArray(state.drills) || !state.drills.length) state.drills = freshStarter().drills;
@@ -1033,6 +1056,7 @@
       function fmtHms(s) { return String(Math.floor(s/3600)).padStart(2,"0") + ":" + String(Math.floor((s%3600)/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
       function parseDuration(value) { const text = String(value || "").toLowerCase(); if (text.includes("30")) return 30; const num = Number(text.match(/\d+/)?.[0] || 60); return Math.max(1, num) * (text.includes("sec") ? 1 : 60); }
       function setActiveDrill(id, keepScroll = false) {
+        state.sessionComplete = false;
         state.selectedVideoDrill = id;
         const d = state.drills.find(x => x.id === id);
         if (d?.durationSeconds) chooseDuration(Number(d.durationSeconds), keepScroll);
@@ -1061,6 +1085,7 @@
           state.seconds = state.duration;
           state.pendingCountSave = false;
           state.resting = false;
+          state.sessionComplete = false;
           state.running = true;
           save();
           render();
@@ -1102,7 +1127,7 @@
         if (!id) return `<div class="video"></div>`;
         const label = selectedVideoDrill()?.name || "YouTube drill video";
         const fallback = `<a class="video-fallback ${state.running ? "playing" : ""}" href="${esc(url)}" target="_blank" onclick="playVideoFromTap(event);openCompanionVideoIfNeeded(this.href)"><span><span class="play-dot">▶</span>${state.running ? "Open video if this display blocks YouTube" : "Tap to play video"}</span></a>`;
-        return `<div class="video-wrap ${state.running ? "playing" : ""}" id="videoWrap"><iframe id="tutorialVideo" src="${embed(url, state.running)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen onload="this.closest('.video-wrap')?.classList.add('iframe-loaded')"></iframe><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><div class="video-title">${esc(label)}</div>${fallback}</div>`;
+        return `<div class="video-wrap ${state.running ? "playing" : ""}" id="videoWrap"><iframe id="tutorialVideo" src="${embed(url, state.running)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen onload="this.closest('.video-wrap')?.classList.add('iframe-loaded')"></iframe><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><div class="video-countdown-overlay ${state.running ? "show" : ""}" id="videoCountdown"><span>Time left</span><strong>${fmtHms(state.seconds)}</strong></div><div class="video-title">${esc(label)}</div>${fallback}</div>`;
       }
       function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c])); }
 
@@ -1311,6 +1336,7 @@
         state.running = false;
         state.resting = false;
         state.pendingCountSave = false;
+        state.sessionComplete = false;
         clearInterval(tick);
         clearInterval(restTick);
         stopVideoNow();
@@ -1326,6 +1352,7 @@
 
       function timer(on, skipRender = false, skipVideoStart = false) {
         state.running = on;
+        if (on) state.sessionComplete = false;
         clearInterval(tick);
         clearInterval(restTick);
         if (on && state.seconds <= 0) state.seconds = state.duration;
@@ -1341,18 +1368,23 @@
             if (hasNextPlaylistDrill()) startRestTimer();
             else completePlaylist();
           }
-          else renderHomeTimer();
+          else {
+            renderHomeTimer();
+            renderVideoCountdown();
+          }
           save();
         }, 1000);
         save();
         if (!skipRender) render();
         if (on && !skipVideoStart) startVideoNow();
         else if (!on) stopVideoNow();
+        renderVideoCountdown();
       }
-      function chooseDuration(seconds, keepScroll = false) { state.duration = seconds; state.seconds = seconds; state.running = false; state.resting = false; clearInterval(tick); clearInterval(restTick); stopVideoNow(); save(); keepScroll ? renderPreservingPosition() : render(); }
+      function chooseDuration(seconds, keepScroll = false) { state.duration = seconds; state.seconds = seconds; state.running = false; state.resting = false; state.sessionComplete = false; clearInterval(tick); clearInterval(restTick); stopVideoNow(); save(); keepScroll ? renderPreservingPosition() : render(); }
       function startRestTimer() {
         state.resting = true;
         state.restSeconds = state.restDuration;
+        state.pendingCountSave = true;
         save();
         render();
         clearInterval(restTick);
@@ -1368,8 +1400,17 @@
         }, 1000);
       }
       function finishRestAndAdvance() {
-        saveCountOnly();
+        if (state.pendingCountSave) saveCountOnly();
+        state.pendingCountSave = false;
         state.resting = false;
+        continueAfterRest();
+      }
+      function continueRestOnly() {
+        state.pendingCountSave = false;
+        state.resting = false;
+        continueAfterRest();
+      }
+      function continueAfterRest() {
         if (hasNextPlaylistDrill()) {
           advancePlaylist();
           playVideoFromTap();
@@ -1383,6 +1424,7 @@
         state.running = false;
         state.resting = false;
         state.pendingCountSave = false;
+        state.sessionComplete = true;
         state.seconds = 0;
         clearInterval(tick);
         clearInterval(restTick);
@@ -1390,9 +1432,18 @@
         save();
         render();
       }
+      function closeSessionComplete() {
+        state.sessionComplete = false;
+        save();
+        render();
+      }
       function restOverlayMarkup() {
         const d = selectedVideoDrill();
-        return `<div style="position:fixed;inset:0;z-index:50;background:rgba(10,20,14,.45);display:grid;place-items:center;padding:20px"><div class="card" style="max-width:390px;width:100%;text-align:center"><div class="panel-title">${state.restDuration} Second Rest</div><div class="timer-big" style="font-size:54px;margin:16px 0">${fmtHms(state.restSeconds)}</div><label style="text-align:left;margin:0 0 14px;font-size:15px">Reps completed for ${esc(d?.name || "drill")}<input type="number" min="0" inputmode="numeric" value="${esc(d?.count || "")}" oninput="setSelectedCount(this.value)" placeholder="Type number of reps" autofocus style="font-size:22px;font-weight:900;text-align:center;padding:12px"></label><p class="muted">Type the reps now. The next playlist video starts when rest ends.</p><button class="btn primary" onclick="clearInterval(restTick);finishRestAndAdvance()">Save Reps & Continue</button></div></div>`;
+        const next = state.drills.find(x => x.id === nextPlaylistDrillId());
+        return `<div style="position:fixed;inset:0;z-index:50;background:rgba(10,20,14,.45);display:grid;place-items:center;padding:20px"><div class="card" style="max-width:430px;width:100%;text-align:center"><div class="panel-title">${state.restDuration} Second Rest</div><div class="timer-big" style="font-size:54px;margin:16px 0">${fmtHms(state.restSeconds)}</div><div style="border:1px solid #d9eadf;background:#f4fbf6;border-radius:10px;padding:10px 12px;margin:0 0 14px;text-align:left"><span style="display:block;color:#15803d;font-size:12px;font-weight:900;text-transform:uppercase">Next drill</span><strong style="display:block;margin-top:3px;font-size:18px;line-height:1.2">${esc(next?.name || "Training complete")}</strong></div><label style="text-align:left;margin:0 0 14px;font-size:15px">Reps completed for ${esc(d?.name || "drill")}<input type="number" min="0" inputmode="numeric" value="${esc(d?.count || "")}" oninput="setSelectedCount(this.value)" placeholder="Type number of reps" autofocus style="font-size:22px;font-weight:900;text-align:center;padding:12px"></label><p class="muted">${state.pendingCountSave ? "Type reps, save them, then continue when ready." : "Reps saved. Continue when ready."}</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px"><button class="btn light" onclick="saveRestRepsOnly()">Save Reps</button><button class="btn primary" onclick="clearInterval(restTick);continueRestOnly()">Continue</button></div></div></div>`;
+      }
+      function sessionCompleteMarkup() {
+        return `<div style="position:fixed;inset:0;z-index:55;background:rgba(10,20,14,.52);display:grid;place-items:center;padding:20px"><div class="card" style="max-width:440px;width:100%;text-align:center;border-color:#b9e7c7;box-shadow:0 24px 70px rgba(0,0,0,.24)"><div style="font-size:52px;line-height:1">🏆</div><div class="panel-title" style="font-size:24px;margin-top:10px">Congratulations!</div><p style="font-size:18px;font-weight:900;margin:12px 0 6px">You have completed your training session.</p><p class="muted" style="margin-bottom:18px">Great work. The playlist video has stopped.</p><button class="btn primary" onclick="closeSessionComplete()">Done</button></div></div>`;
       }
       function renderRestOverlay() {
         const el = document.getElementById("restOverlay");
@@ -1430,7 +1481,7 @@
       function openCompanionVideoIfNeeded(url) {
         if (!url || !isInAppPreviewBrowser()) return;
         document.getElementById("videoWrap")?.classList.add("blocked-preview");
-        window.open(url, "coachTrackerVideoPlayer");
+        companionVideoWindow = window.open(url, "coachTrackerVideoPlayer");
       }
       function mountVideoIframe(url, play) {
         const wrap = document.getElementById("videoWrap");
@@ -1461,6 +1512,17 @@
       }
       function stopVideoNow() {
         commandIframePause();
+        if (companionVideoWindow && !companionVideoWindow.closed) {
+          try { companionVideoWindow.close(); } catch {}
+        }
+        companionVideoWindow = null;
+        const url = selectedVideoDrill()?.videoLink || videoUrl();
+        const iframe = document.getElementById("tutorialVideo");
+        const wrap = document.getElementById("videoWrap");
+        if (iframe && url) iframe.src = embed(url, false);
+        wrap?.classList.remove("playing", "iframe-loaded", "blocked-preview");
+        wrap?.querySelector(".video-fallback")?.classList.remove("playing");
+        renderVideoCountdown();
       }
       function commandIframePlay() {
         const iframe = document.getElementById("tutorialVideo");
@@ -1538,8 +1600,23 @@
         </section>
         <section class="card">
           <div class="panel-head"><div class="panel-title">Tutorial Video</div></div>
+          <div class="training-instructions">
+            <div class="training-instructions-inner">
+              <div class="instruction-top">
+                <div>
+                  <div class="instruction-badge">Instructions</div>
+                  <div class="instruction-title">Ready to train?</div>
+                </div>
+                <div class="instruction-pill">Every touch counts</div>
+              </div>
+              <div class="instruction-grid">
+                <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">âš½</span><span class="instruction-number">Step 1</span></div><strong>Choose your drills</strong><p>Pick the skills you want to train today.</p></div>
+                <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">+</span><span class="instruction-number">Step 2</span></div><strong>Add to playlist</strong><p>Build a quick practice lineup.</p></div>
+                <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">â–¶</span><span class="instruction-number">Step 3</span></div><strong>Press Start</strong><p>Train when you&rsquo;re ready.</p></div>
+              </div>
+            </div>
+          </div>
           <div class="video-controls">
-            <div class="inline-timer" id="timerCard">${timerMarkup()}</div>
             <label>Drill video
               <select onchange="setActiveDrill(this.value)">
                 ${(sessionDrills().length ? sessionDrills() : d).filter(x => x.videoLink).map(x => `<option value="${x.id}" ${activeVideoDrill?.id===x.id?"selected":""}>${esc(x.name)}</option>`).join("")}
@@ -1563,6 +1640,7 @@
                 </div>
               </div>
               ${videoMarkup(video)}
+              <div class="inline-timer timer-strip" id="timerCard">${timerMarkup()}</div>
             </div>
             <details class="playlist-drop">
               <summary><span>Training playlist <small class="muted">(${sessionDrills().length ? `${sessionDrills().length} selected` : "select drills below"})</small></span><span class="chev">⌄</span></summary>
@@ -1596,23 +1674,27 @@
         const lastReps = latestSavedCount(activeDrill);
         const details = lastReps !== "" ? `Reps: ${esc(lastReps)}` : total && done >= total && !state.running && !state.resting ? "Complete" : state.running ? "Running" : state.resting ? "Rest" : "Press Start";
         const timePct = state.duration ? Math.max(0, Math.min(100, Math.round((state.seconds / state.duration) * 100))) : 0;
-        return `<div class="panel-title">Training Timer</div>
-        <label style="max-width:150px;margin-top:8px;font-size:12px">Countdown
-          <select onchange="chooseDuration(Number(this.value))" style="padding:6px 8px">
-            <option value="60" ${state.duration===60?"selected":""}>1:00</option>
-            <option value="45" ${state.duration===45?"selected":""}>0:45</option>
-            <option value="30" ${state.duration===30?"selected":""}>0:30</option>
-          </select>
-        </label>
-        <label style="max-width:150px;margin-top:8px;font-size:12px">Rest seconds
-          <input type="number" min="15" max="30" value="${esc(state.restDuration)}" onchange="setRestDuration(this.value)" style="padding:6px 8px">
-        </label>
+        return `<div class="timer-line">
+        <div class="panel-title">Training Timer</div>
+        <div class="timer-selects">
+          <label>Countdown
+            <select onchange="chooseDuration(Number(this.value))">
+              <option value="60" ${state.duration===60?"selected":""}>1:00</option>
+              <option value="45" ${state.duration===45?"selected":""}>0:45</option>
+              <option value="30" ${state.duration===30?"selected":""}>0:30</option>
+            </select>
+          </label>
+          <label>Rest
+            <input type="number" min="15" max="30" value="${esc(state.restDuration)}" onchange="setRestDuration(this.value)">
+          </label>
+        </div>
         <div class="timer-big">${fmtHms(state.seconds)}</div>
-        <div class="countdown-bar" aria-label="Countdown time left"><span style="width:${timePct}%"></span></div>
         <div class="buttons">
           <button class="btn primary" onclick="timer(true)">Start</button>
           <button class="btn light" onclick="timer(false)">Pause</button><button class="btn light" onclick="chooseDuration(state.duration)">Reset</button>
         </div>
+        </div>
+        <div class="countdown-bar" aria-label="Countdown time left"><span style="width:${timePct}%"></span></div>
         ${state.pendingCountSave ? `<button class="btn primary" style="width:100%;margin-top:8px" onclick="saveSelectedCountForSession()">End Count & Save</button>` : ""}
         <div class="timer-summary">
           <div><span>Completed</span><strong>${done}/${total}</strong></div>
@@ -1636,6 +1718,13 @@
         return latest === undefined || latest === null ? "" : String(latest);
       }
       function renderHomeTimer() { const el = document.getElementById("timerCard"); if (el) el.innerHTML = timerMarkup(); }
+      function renderVideoCountdown() {
+        const el = document.getElementById("videoCountdown");
+        if (!el) return;
+        el.classList.toggle("show", Boolean(state.running));
+        const value = el.querySelector("strong");
+        if (value) value.textContent = fmtHms(state.seconds);
+      }
       function avg(d) { return d.length ? (d.reduce((s,x)=>s+Number(x.rating||0),0)/d.length).toFixed(1) : "0"; }
       function renderPreservingPosition() {
         const top = window.scrollY;
@@ -1701,6 +1790,12 @@
         save();
         advancePlaylist();
       }
+      function saveRestRepsOnly() {
+        saveCountOnly();
+        state.pendingCountSave = false;
+        save();
+        renderRestOverlay();
+      }
       function saveCountOnly() {
         const d = selectedVideoDrill();
         const number = Number(d?.count);
@@ -1711,6 +1806,7 @@
         }
       }
       function toggleSessionDrill(id, checked) {
+        state.sessionComplete = false;
         state.sessionDrillIds = checked ? [...new Set([...(state.sessionDrillIds || []), id])] : (state.sessionDrillIds || []).filter(x => x !== id);
         if (!state.sessionDrillIds.includes(state.selectedVideoDrill)) state.selectedVideoDrill = state.sessionDrillIds[0] || "";
         save();
@@ -1730,6 +1826,7 @@
         state.running = false;
         state.pendingCountSave = false;
         state.resting = false;
+        state.sessionComplete = false;
         clearInterval(tick);
         clearInterval(restTick);
         stopVideoNow();
@@ -1774,7 +1871,7 @@
           normalizeState();
           renderNav();
           const pageHtml = state.page === "Home" ? renderHome() : state.page === "Players" ? renderPlayers() : state.page === "Drills" ? renderDrills() : state.page === "Training Sessions" ? renderSessions() : renderProgress();
-          document.getElementById("app").innerHTML = `${pageHtml}<div id="restOverlay">${state.resting ? restOverlayMarkup() : ""}</div>`;
+          document.getElementById("app").innerHTML = `${pageHtml}<div id="restOverlay">${state.resting ? restOverlayMarkup() : ""}</div><div id="sessionCompleteOverlay">${state.sessionComplete ? sessionCompleteMarkup() : ""}</div>`;
         } catch (error) {
           console.error(error);
           document.getElementById("app").innerHTML = `<section class="card"><div class="panel-title">Home screen needs a refresh</div><p class="muted" style="margin:12px 0">Your saved browser data was out of date. Tap the button below to reload the tracker with the Excel drills.</p><button class="btn primary" onclick="resetTracker()">Reload tracker</button></section>`;

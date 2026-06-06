@@ -296,6 +296,8 @@ function App() {
   const [sessionDrillIds, setSessionDrillIds] = useState<string[]>(() => state.players[0]?.drillIds.slice(0, 6) ?? []);
   const [pendingCountSave, setPendingCountSave] = useState(false);
   const [resting, setResting] = useState(false);
+  const [restRepsSaved, setRestRepsSaved] = useState(false);
+  const [sessionComplete, setSessionComplete] = useState(false);
   const [restSeconds, setRestSeconds] = useState(30);
   const [restDuration, setRestDuration] = useState(30);
   const [playlistPlayRequest, setPlaylistPlayRequest] = useState(0);
@@ -397,21 +399,24 @@ function App() {
     if (!running) return;
     const interval = window.setInterval(() => {
       setSeconds((current) => {
-        if (current <= 1) {
-          setRunning(false);
-          setPendingCountSave(false);
-          playTimerDoneSound(audioRef);
-          const ids = sessionDrillIds.length ? sessionDrillIds : orderedSessionDrills.map((drill) => drill.id);
-          const currentIndex = ids.indexOf(selectedVideoDrill?.id ?? "");
-          if (currentIndex >= 0 && currentIndex < ids.length - 1) {
-            setRestSeconds(restDuration);
-            setResting(true);
-          } else {
-            saveCurrentCountForSession();
-            setResting(false);
+          if (current <= 1) {
+            setRunning(false);
+            setPendingCountSave(false);
+            playTimerDoneSound(audioRef);
+            const ids = sessionDrillIds.length ? sessionDrillIds : orderedSessionDrills.map((drill) => drill.id);
+            const currentIndex = ids.indexOf(selectedVideoDrill?.id ?? "");
+            if (currentIndex >= 0 && currentIndex < ids.length - 1) {
+              setRestSeconds(restDuration);
+              setResting(true);
+              setRestRepsSaved(false);
+              setSessionComplete(false);
+            } else {
+              saveCurrentCountForSession();
+              setResting(false);
+              setSessionComplete(true);
+            }
+            return 0;
           }
-          return 0;
-        }
         return current - 1;
       });
     }, 1000);
@@ -424,8 +429,9 @@ function App() {
       setRestSeconds((current) => {
         if (current <= 1) {
           window.clearInterval(interval);
-          saveCurrentCountForSession();
+          if (!restRepsSaved) saveCurrentCountForSession();
           setResting(false);
+          setRestRepsSaved(false);
           advanceToNextPlaylistDrill(true);
           return restDuration;
         }
@@ -433,7 +439,11 @@ function App() {
       });
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [resting, restDuration]);
+  }, [resting, restDuration, restRepsSaved]);
+
+  const restPlaylistIds = sessionDrillIds.length ? sessionDrillIds : orderedSessionDrills.map((drill) => drill.id);
+  const currentRestIndex = restPlaylistIds.indexOf(selectedVideoDrill?.id ?? "");
+  const nextRestDrill = currentRestIndex >= 0 ? playerDrills.find((drill) => drill.id === restPlaylistIds[currentRestIndex + 1]) : undefined;
 
   return (
     <div className="min-h-screen bg-[#f7faf8] text-ink">
@@ -534,6 +544,7 @@ function App() {
               setRunning(false);
               setPendingCountSave(false);
               setResting(false);
+              setSessionComplete(false);
             }}
             onUseRecommendedPlaylist={(drillIds) => {
               const nextIds = drillIds.filter((id) => state.drills.some((drill) => drill.id === id));
@@ -556,10 +567,12 @@ function App() {
               setRunning(false);
               setPendingCountSave(false);
               setResting(false);
+              setSessionComplete(false);
             }}
             onStartPlaylist={() => {
               const first = orderedSessionDrills[0] ?? selectedVideoDrill ?? playerDrills.find((drill) => drill.videoLink);
               if (!first) return;
+              setSessionComplete(false);
               setSessionDrillIds((current) => (current.includes(first.id) ? current : [first.id, ...current]));
               setSelectedVideoDrillId(first.id);
               const nextDuration = first.durationSeconds || duration;
@@ -580,6 +593,7 @@ function App() {
                 setSeconds(durationSeconds);
                 setRunning(false);
                 setPendingCountSave(false);
+                setSessionComplete(false);
               }
             }}
             onSaveCountForSession={() => {
@@ -593,6 +607,7 @@ function App() {
               setRunning(false);
               setPendingCountSave(false);
               setResting(false);
+              setSessionComplete(false);
             }}
             onRestDurationChange={(nextRestDuration) => {
               const clamped = Math.min(30, Math.max(15, nextRestDuration));
@@ -600,6 +615,7 @@ function App() {
               if (!resting) setRestSeconds(clamped);
             }}
             onStart={() => {
+              setSessionComplete(false);
               unlockAudio(audioRef);
               if (seconds <= 0) setSeconds(duration);
               setResting(false);
@@ -609,6 +625,7 @@ function App() {
             onReset={() => {
               setRunning(false);
               setResting(false);
+              setSessionComplete(false);
               setSeconds(duration);
             }}
             onSaveSession={addSessionFromTimer}
@@ -631,6 +648,10 @@ function App() {
           <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-soft">
             <h3 className="text-xl font-black uppercase text-field">{restDuration} Second Rest</h3>
             <div className="my-5 text-6xl font-black tabular-nums text-slate-900">{formatTimeHms(restSeconds)}</div>
+            <div className="mb-4 rounded-lg border border-green-100 bg-green-50 p-3 text-left">
+              <span className="block text-xs font-black uppercase text-field">Next drill</span>
+              <strong className="mt-1 block text-lg leading-tight text-slate-900">{nextRestDrill?.name ?? "Training complete"}</strong>
+            </div>
             <label className="mb-4 grid gap-1 text-left text-sm font-bold text-slate-700">
               Reps completed for {selectedVideoDrill?.name ?? "drill"}
               <input
@@ -647,16 +668,45 @@ function App() {
                 className="focus-ring rounded-md border border-slate-300 px-3 py-3 text-center text-2xl font-black"
               />
             </label>
-            <p className="mb-5 text-sm text-slate-600">Type the reps now. The next playlist video starts when rest ends.</p>
+            <p className="mb-5 text-sm text-slate-600">{restRepsSaved ? "Reps saved. Continue when ready." : "Type reps, save them, then continue when ready."}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  saveCurrentCountForSession();
+                  setRestRepsSaved(true);
+                }}
+                className="focus-ring rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-800 hover:bg-slate-50"
+              >
+                Save Reps
+              </button>
+              <button
+                onClick={() => {
+                  setResting(false);
+                  setRestRepsSaved(false);
+                  advanceToNextPlaylistDrill(true);
+                }}
+                className="focus-ring rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {sessionComplete && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-5">
+          <div className="w-full max-w-md rounded-lg border border-green-200 bg-white p-6 text-center shadow-soft">
+            <div className="text-5xl" aria-hidden="true">
+              🏆
+            </div>
+            <h3 className="mt-3 text-2xl font-black uppercase text-field">Congratulations!</h3>
+            <p className="mt-3 text-lg font-black text-slate-900">You have completed your training session.</p>
+            <p className="mt-2 text-sm text-slate-600">Great work. The playlist video has stopped.</p>
             <button
-              onClick={() => {
-                saveCurrentCountForSession();
-                setResting(false);
-                advanceToNextPlaylistDrill(true);
-              }}
-              className="focus-ring w-full rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
+              onClick={() => setSessionComplete(false)}
+              className="focus-ring mt-5 w-full rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
             >
-              Save Reps & Continue
+              Done
             </button>
           </div>
         </div>
@@ -867,28 +917,8 @@ function HomePage(props: {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-black uppercase text-field">Tutorial Video</h3>
         </div>
-        <div className="mb-4 grid items-start gap-3 md:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <TimerPanel
-              seconds={props.seconds}
-              running={props.running}
-              duration={props.duration}
-              restDuration={props.restDuration}
-              onChooseDuration={props.onChooseDuration}
-              onRestDurationChange={props.onRestDurationChange}
-              onStart={props.onStart}
-              onPause={props.onPause}
-              onReset={props.onReset}
-              onSaveSession={props.onSaveSession}
-              compact
-              completedCount={playlistCompletedCount}
-              totalDrills={playlistDrills.length}
-              progress={playlistProgress}
-              countHistory={videoDrill?.countHistory ?? []}
-              pendingCountSave={props.pendingCountSave}
-              onSaveCountForSession={props.onSaveCountForSession}
-            />
-          </div>
+        <TrainingInstructions />
+        <div className="mb-4 grid items-start gap-3 md:grid-cols-[minmax(220px,340px)_1fr]">
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Drill video
             <select
@@ -912,8 +942,28 @@ function HomePage(props: {
             </select>
           </label>
           <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
-            <TrainingInstructions />
-            <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} />
+            <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} seconds={props.seconds} />
+            <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+              <TimerPanel
+                seconds={props.seconds}
+                running={props.running}
+                duration={props.duration}
+                restDuration={props.restDuration}
+                onChooseDuration={props.onChooseDuration}
+                onRestDurationChange={props.onRestDurationChange}
+                onStart={props.onStart}
+                onPause={props.onPause}
+                onReset={props.onReset}
+                onSaveSession={props.onSaveSession}
+                compact
+                completedCount={playlistCompletedCount}
+                totalDrills={playlistDrills.length}
+                progress={playlistProgress}
+                countHistory={videoDrill?.countHistory ?? []}
+                pendingCountSave={props.pendingCountSave}
+                onSaveCountForSession={props.onSaveCountForSession}
+              />
+            </div>
           </div>
           <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
             <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 py-1">
@@ -1392,10 +1442,93 @@ function TimerPanel({
   const details = lastSavedReps !== undefined ? `Reps: ${lastSavedReps}` : totalDrills && completedCount !== undefined && completedCount >= totalDrills && !running ? "Complete" : running ? "Running" : "Press Start";
   const timeLeftPercent = duration ? Math.max(0, Math.min(100, Math.round((seconds / duration) * 100))) : 0;
 
+  if (compact) {
+    return (
+      <div>
+        <div className="grid items-center gap-2 sm:grid-cols-[auto_minmax(170px,1fr)_auto_auto]">
+          <h3 className="text-sm font-black uppercase text-field">Training Timer</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="grid min-w-24 flex-1 gap-1 text-[11px] font-bold text-slate-700 sm:max-w-28">
+              Countdown
+              <select
+                value={duration}
+                onChange={(event) => onChooseDuration(Number(event.target.value))}
+                className="focus-ring rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-normal"
+              >
+                <option value={60}>1:00</option>
+                <option value={45}>0:45</option>
+                <option value={30}>0:30</option>
+              </select>
+            </label>
+            <label className="grid min-w-24 flex-1 gap-1 text-[11px] font-bold text-slate-700 sm:max-w-28">
+              Rest
+              <input
+                type="number"
+                min={15}
+                max={30}
+                value={restDuration}
+                onChange={(event) => onRestDurationChange(Number(event.target.value))}
+                className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-xs font-normal"
+              />
+            </label>
+          </div>
+          <div className="text-2xl font-black tracking-wider tabular-nums text-slate-900">{formatTimeHms(seconds)}</div>
+          <div className="grid grid-cols-3 gap-1 sm:flex">
+            <ActionButton onClick={onStart} icon={Play} disabled={running} compact>
+              Start
+            </ActionButton>
+            <ActionButton onClick={onPause} icon={Clock3} disabled={!running} compact>
+              Pause
+            </ActionButton>
+            <ActionButton onClick={onReset} icon={RotateCcw} variant="light" compact>
+              Reset
+            </ActionButton>
+          </div>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full border border-slate-300 bg-slate-200" aria-label="Countdown time left">
+          <div className="h-full rounded-full bg-field transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
+        </div>
+        {pendingCountSave && onSaveCountForSession && (
+          <button onClick={onSaveCountForSession} className="focus-ring mt-2 w-full rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
+            End Count & Save
+          </button>
+        )}
+        {totalDrills !== undefined && progress !== undefined && (
+          <div className="mt-2 grid grid-cols-3 gap-1.5 border-t border-slate-200 pt-2">
+            <div className="rounded-md border border-slate-200 bg-white p-1.5">
+              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Completed</span>
+              <strong className="block text-base leading-tight text-slate-900">{completedCount ?? 0}/{totalDrills}</strong>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-white p-1.5">
+              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Progress</span>
+              <strong className="block text-base leading-tight text-slate-900">{progress}%</strong>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-white p-1.5">
+              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Details</span>
+              <strong className="block text-xs leading-tight text-slate-900">{details}</strong>
+            </div>
+          </div>
+        )}
+        {countHistory.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5 text-xs text-slate-600">
+            {countHistory
+              .slice(-3)
+              .reverse()
+              .map((entry) => (
+                <span key={entry.id} className="rounded-full border border-slate-200 bg-white px-2 py-1">
+                  {entry.date}: {entry.count}
+                </span>
+              ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className={compact ? "relative" : ""}>
-      <h3 className={`${compact ? "text-sm" : "text-lg"} font-black uppercase text-field`}>Training Timer</h3>
-      <label className={`${compact ? "mt-2 max-w-32 text-xs" : "mt-4 max-w-40 text-sm"} grid gap-1 font-bold text-slate-700`}>
+    <div>
+      <h3 className="text-lg font-black uppercase text-field">Training Timer</h3>
+      <label className="mt-4 grid max-w-40 gap-1 text-sm font-bold text-slate-700">
         Countdown
         <select
           value={duration}
@@ -1407,70 +1540,21 @@ function TimerPanel({
           <option value={30}>0:30</option>
         </select>
       </label>
-      {compact && (
-        <label className="mt-2 grid max-w-32 gap-1 text-xs font-bold text-slate-700">
-          Rest seconds
-          <input
-            type="number"
-            min={15}
-            max={30}
-            value={restDuration}
-            onChange={(event) => onRestDurationChange(Number(event.target.value))}
-            className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal"
-          />
-        </label>
-      )}
-      <div className={`${compact ? "my-2 text-3xl" : "my-10 text-6xl sm:text-7xl"} font-black tracking-wider tabular-nums text-slate-900`}>{formatTimeHms(seconds)}</div>
-      <div className={`${compact ? "mb-2 h-3" : "mb-4 h-4"} overflow-hidden rounded-full border border-slate-300 bg-slate-200`} aria-label="Countdown time left">
+      <div className="my-10 text-6xl font-black tracking-wider tabular-nums text-slate-900 sm:text-7xl">{formatTimeHms(seconds)}</div>
+      <div className="mb-4 h-4 overflow-hidden rounded-full border border-slate-300 bg-slate-200" aria-label="Countdown time left">
         <div className="h-full rounded-full bg-field transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
       </div>
-      <div className={`grid grid-cols-3 ${compact ? "gap-1.5" : "gap-2"}`}>
-        <ActionButton onClick={onStart} icon={Play} disabled={running} compact={compact}>
+      <div className="grid grid-cols-3 gap-2">
+        <ActionButton onClick={onStart} icon={Play} disabled={running}>
           Start
         </ActionButton>
-        <ActionButton onClick={onPause} icon={Clock3} disabled={!running} compact={compact}>
+        <ActionButton onClick={onPause} icon={Clock3} disabled={!running}>
           Pause
         </ActionButton>
-        <ActionButton onClick={onReset} icon={RotateCcw} variant="light" compact={compact}>
+        <ActionButton onClick={onReset} icon={RotateCcw} variant="light">
           Reset
         </ActionButton>
       </div>
-      {compact && pendingCountSave && onSaveCountForSession && (
-        <button onClick={onSaveCountForSession} className="focus-ring mt-2 w-full rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
-          End Count & Save
-        </button>
-      )}
-      {compact && totalDrills !== undefined && progress !== undefined && (
-        <div className="mt-3 grid grid-cols-3 gap-1.5 border-t border-slate-200 pt-2">
-          <div className="rounded-md border border-slate-200 bg-white p-1.5">
-            <span className="block truncate text-[10px] font-black uppercase text-slate-500">Completed</span>
-            <strong className="block text-base leading-tight text-slate-900">{completedCount ?? 0}/{totalDrills}</strong>
-          </div>
-          <div className="rounded-md border border-slate-200 bg-white p-1.5">
-            <span className="block truncate text-[10px] font-black uppercase text-slate-500">Progress</span>
-            <strong className="block text-base leading-tight text-slate-900">{progress}%</strong>
-          </div>
-          <div className="rounded-md border border-slate-200 bg-white p-1.5">
-            <span className="block truncate text-[10px] font-black uppercase text-slate-500">Details</span>
-            <strong className="block text-xs leading-tight text-slate-900">{details}</strong>
-          </div>
-          <div className="col-span-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
-            <div className="h-full rounded-full bg-field" style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      )}
-      {compact && countHistory.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5 text-xs text-slate-600">
-          {countHistory
-            .slice(-3)
-            .reverse()
-            .map((entry) => (
-              <span key={entry.id} className="rounded-full border border-slate-200 bg-white px-2 py-1">
-                {entry.date}: {entry.count}
-              </span>
-            ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -1572,7 +1656,7 @@ function EditablePlayerCard({
   );
 }
 
-function VideoFrame({ url, playing = false, playRequest = 0 }: { url: string; playing?: boolean; playRequest?: number }) {
+function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { url: string; playing?: boolean; playRequest?: number; seconds?: number }) {
   const id = youtubeId(url);
   const [playerReady, setPlayerReady] = useState(false);
   const [tapPlaying, setTapPlaying] = useState(false);
@@ -1604,6 +1688,13 @@ function VideoFrame({ url, playing = false, playRequest = 0 }: { url: string; pl
     window.setTimeout(() => commandYouTubeFrame("playVideo"), 1500);
   }, [id, shouldPlay]);
 
+  useEffect(() => {
+    if (!playing) {
+      setTapPlaying(false);
+      commandYouTubeFrame("pauseVideo");
+    }
+  }, [playing]);
+
   if (!id) {
     return <div className="grid aspect-video place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Add a YouTube video link to show it here.</div>;
   }
@@ -1623,6 +1714,12 @@ function VideoFrame({ url, playing = false, playRequest = 0 }: { url: string; pl
         className={`absolute inset-0 h-full w-full border-0 ${playerReady ? "z-30" : "z-0"}`}
       />
       {id && !playerReady && <img src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`} alt="" className="absolute inset-0 z-10 h-full w-full object-cover" />}
+      {playing && (
+        <div className="pointer-events-none absolute right-4 top-4 z-50 rounded-full border border-white/30 bg-slate-950/85 px-4 py-2 text-center text-white shadow-xl">
+          <span className="block text-[10px] font-black uppercase tracking-[0.08em] text-green-200">Time left</span>
+          <strong className="mt-1 block text-2xl font-black tabular-nums leading-none">{formatTimeHms(seconds)}</strong>
+        </div>
+      )}
       {(!playerReady || (shouldPlay && isInAppPreviewBrowser())) && (
         <a
           href={url}
