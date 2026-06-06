@@ -10,6 +10,7 @@ import {
   Plus,
   RotateCcw,
   Save,
+  SkipForward,
   Star,
   Trash2,
   Users,
@@ -205,7 +206,16 @@ function groupDrillsByCategory(drills: Drill[]) {
   const groups = new Map<string, Drill[]>();
   drills.forEach((drill) => {
     const category = getDrillCategory(drill);
-    groups.set(category, [...(groups.get(category) ?? []), drill]);
+    const categoryDrills = groups.get(category) ?? [];
+    const key = drillCategoryKey(drill.name);
+    const duplicateIndex = categoryDrills.findIndex((item) => drillCategoryKey(item.name) === key);
+    if (duplicateIndex === -1) {
+      groups.set(category, [...categoryDrills, drill]);
+    } else if (!categoryDrills[duplicateIndex].videoLink && drill.videoLink) {
+      const nextDrills = [...categoryDrills];
+      nextDrills[duplicateIndex] = drill;
+      groups.set(category, nextDrills);
+    }
   });
   return Array.from(groups.entries()).sort(([a], [b]) => {
     const aIndex = drillCategoryOrder.indexOf(a);
@@ -382,7 +392,13 @@ function App() {
     const currentIndex = ids.indexOf(selectedVideoDrill?.id ?? "");
     const nextId = currentIndex < 0 ? ids[0] : ids[currentIndex + 1];
     const nextDrill = playerDrills.find((drill) => drill.id === nextId);
-    if (!nextDrill) return;
+    if (!nextDrill) {
+      setRunning(false);
+      setResting(false);
+      setPendingCountSave(false);
+      setSessionComplete(true);
+      return;
+    }
     setSelectedVideoDrillId(nextDrill.id);
     const nextDuration = nextDrill.durationSeconds || duration;
     setDuration(nextDuration);
@@ -585,6 +601,7 @@ function App() {
               openCompanionVideoIfNeeded(first.videoLink);
               setRunning(true);
             }}
+            onNextDrill={() => advanceToNextPlaylistDrill(running)}
             onUpdateDrillDuration={(drill, minutes) => {
               const durationSeconds = Math.max(1, minutes) * 60;
               updateDrill({ ...drill, durationSeconds, timer: String(minutes) });
@@ -768,7 +785,7 @@ function categoryVisual(category: string, index: number): CategoryVisual {
   } else if (normalized.includes("turn") || normalized.includes("dribbl") || normalized.includes("cone")) {
     visual = {
       icon: "DR",
-      title: normalized.includes("turn") ? "Turns & Dribbling" : "Dribbling",
+      title: category === "2 Cone Turns" ? "2 Cones Turns Drills" : normalized.includes("turn") ? category : "Dribbling",
       subtitle: "Change direction and beat space.",
       background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
       border: "#fed7aa",
@@ -853,6 +870,7 @@ function HomePage(props: {
   onClearPlaylist: () => void;
   onUseRecommendedPlaylist: (drillIds: string[]) => void;
   onStartPlaylist: () => void;
+  onNextDrill: () => void;
   onUpdateDrillDuration: (drill: Drill, minutes: number) => void;
   onSaveCountForSession: () => void;
   onChooseDuration: (seconds: number) => void;
@@ -871,7 +889,7 @@ function HomePage(props: {
   const playlistProgress = playlistDrills.length ? Math.round((playlistCompletedCount / playlistDrills.length) * 100) : 0;
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
-  const [selectedCategoryDrills, setSelectedCategoryDrills] = useState<Record<string, string>>({});
+  const [selectedCategoryDrills, setSelectedCategoryDrills] = useState<Record<string, string[]>>({});
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
   const recommendedPlaylists = useMemo(
@@ -893,26 +911,6 @@ function HomePage(props: {
   );
   return (
     <div className="space-y-5">
-      <section className="flex items-center gap-6">
-        <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white">
-          {props.player.photoDataUrl ? (
-            <img src={props.player.photoDataUrl} alt={`${props.player.name} photo`} className="h-full w-full object-cover" />
-          ) : (
-            <div className="grid h-16 w-16 place-items-center rounded-b-lg rounded-t-2xl bg-field text-2xl font-black text-white [clip-path:polygon(18%_12%,34%_0,66%_0,82%_12%,100%_22%,88%_42%,78%_36%,78%_100%,22%_100%,22%_36%,12%_42%,0_22%)]">
-              10
-            </div>
-          )}
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-4xl font-black">{props.player.name}</h2>
-          <div className="mt-3 flex flex-wrap gap-5 text-sm text-slate-600 sm:gap-10">
-            <span>Position: Midfielder</span>
-            <span>Age: 6</span>
-            <span>Foot: Right</span>
-          </div>
-        </div>
-      </section>
-
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-black uppercase text-field">Tutorial Video</h3>
@@ -954,6 +952,7 @@ function HomePage(props: {
                 onStart={props.onStart}
                 onPause={props.onPause}
                 onReset={props.onReset}
+                onNext={props.onNextDrill}
                 onSaveSession={props.onSaveSession}
                 compact
                 completedCount={playlistCompletedCount}
@@ -1080,8 +1079,9 @@ function HomePage(props: {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {categorizedVisibleDrills.map(([category, drills], index) => {
             const visual = categoryVisual(category, index);
-            const selectedId = selectedCategoryDrills[category] ?? "";
-            const selectedDrill = drills.find((drill) => drill.id === selectedId);
+            const selectedIds = selectedCategoryDrills[category] ?? [];
+            const selectedDrills = drills.filter((drill) => selectedIds.includes(drill.id));
+            const previewDrill = selectedDrills[0];
 
             return (
               <article
@@ -1103,32 +1103,42 @@ function HomePage(props: {
                       <span className="shrink-0 rounded-full bg-white/80 px-2 py-1 text-[11px] font-black text-slate-700">{drills.length} drills</span>
                     </div>
                     <div className="mt-3 grid gap-2">
-                      <select
-                        value={selectedId}
-                        onChange={(event) => setSelectedCategoryDrills((current) => ({ ...current, [category]: event.target.value }))}
-                        className="focus-ring rounded-md border border-white/70 bg-white px-3 py-2 text-sm font-bold text-slate-800 shadow-sm"
-                      >
-                        <option value="">Select a drill</option>
+                      <div className="max-h-36 overflow-auto rounded-lg border border-white/70 bg-white/70 p-2 shadow-sm" role="group" aria-label={`Select drills from ${category}`}>
                         {drills.map((drill) => (
-                          <option key={drill.id} value={drill.id}>
-                            {drill.name}
-                          </option>
+                          <label key={drill.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs font-bold text-slate-800 hover:bg-white/80">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(drill.id)}
+                              onChange={(event) =>
+                                setSelectedCategoryDrills((current) => {
+                                  const currentIds = current[category] ?? [];
+                                  const nextIds = event.target.checked
+                                    ? [...currentIds, drill.id]
+                                    : currentIds.filter((id) => id !== drill.id);
+                                  return { ...current, [category]: nextIds };
+                                })
+                              }
+                              className="h-4 w-4 rounded border-slate-300"
+                              style={{ accentColor: visual.accent }}
+                            />
+                            <span>{drill.name}</span>
+                          </label>
                         ))}
-                      </select>
+                      </div>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
-                          disabled={!selectedDrill}
-                          onClick={() => selectedDrill && props.onToggleSessionDrill(selectedDrill.id, true)}
+                          disabled={!selectedDrills.length}
+                          onClick={() => selectedDrills.forEach((drill) => props.onToggleSessionDrill(drill.id, true))}
                           className="focus-ring rounded-md px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
                           style={{ backgroundColor: visual.accent }}
                         >
-                          Add to Playlist
+                          Add Selected
                         </button>
                         <button
                           type="button"
-                          disabled={!selectedDrill}
-                          onClick={() => selectedDrill && props.onActivateDrill(selectedDrill)}
+                          disabled={!previewDrill}
+                          onClick={() => previewDrill && props.onActivateDrill(previewDrill)}
                           className="focus-ring rounded-md border border-white/80 bg-white/90 px-3 py-2 text-sm font-black text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Preview
@@ -1155,40 +1165,125 @@ function HomePage(props: {
 
 function TrainingInstructions() {
   const steps = [
-    { icon: "⚽", title: "Choose your drills", detail: "Pick the skills you want to train today." },
-    { icon: "+", title: "Add to playlist", detail: "Build a quick practice lineup." },
-    { icon: "▶", title: "Press Start", detail: "Train when you're ready." },
+    { art: "choose" as const, title: "Choose Your Drills", detail: "Pick the skills you want to train today." },
+    { art: "playlist" as const, title: "Add To Playlist", detail: "Build your practice lineup." },
+    { art: "start" as const, title: "Press Start When Ready", detail: "Start the timer and follow the video." },
   ];
 
   return (
-    <section className="mb-4 overflow-hidden rounded-2xl border-2 border-green-200 bg-[#eefbf2] shadow-[0_12px_30px_rgba(21,128,61,0.12)]">
+    <section className="mb-4 overflow-hidden rounded-[26px] border-4 border-white bg-gradient-to-br from-[#25a742] to-[#78d83d] shadow-[0_18px_38px_rgba(21,128,61,0.22),inset_0_0_0_2px_rgba(21,128,61,0.18)]">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');`}</style>
-      <div className="relative grid gap-4 p-4 font-['Fredoka',ui-sans-serif] text-slate-900 sm:p-5">
-        <div className="pointer-events-none absolute inset-x-4 top-1/2 h-px bg-white/80" />
-        <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px bg-white/80" />
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        className="relative grid gap-4 p-5 font-['Fredoka',ui-sans-serif] text-slate-900"
+        style={{
+          background:
+            "radial-gradient(circle at 16% 18%, rgba(255,255,255,.24) 0 3px, transparent 4px), radial-gradient(circle at 78% 12%, rgba(255,255,255,.18) 0 3px, transparent 4px), linear-gradient(90deg, transparent 0 49.7%, rgba(255,255,255,.24) 49.7% 50.3%, transparent 50.3%)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-3 rounded-[22px] border-2 border-white/50" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/45 sm:block" />
+        <div className="pointer-events-none absolute inset-0 opacity-35">
+          <div className="absolute inset-y-0 left-0 w-full bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.12)_0_9%,transparent_9%_18%)]" />
+          <div className="absolute inset-y-5 left-5 w-[18%] rounded-r border-2 border-l-0 border-white/60" />
+          <div className="absolute inset-y-5 right-5 w-[18%] rounded-l border-2 border-r-0 border-white/60" />
+          <div className="absolute inset-y-[34%] left-5 w-[8%] rounded-r border-2 border-l-0 border-white/60" />
+          <div className="absolute inset-y-[34%] right-5 w-[8%] rounded-l border-2 border-r-0 border-white/60" />
+          <div className="absolute left-[13%] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white/80" />
+          <div className="absolute right-[13%] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white/80" />
+          <div className="absolute left-[18%] top-1/2 hidden h-24 w-24 -translate-y-1/2 rounded-full border-2 border-white/55 sm:block" />
+          <div className="absolute right-[18%] top-1/2 hidden h-24 w-24 -translate-y-1/2 rounded-full border-2 border-white/55 sm:block" />
+        </div>
+        <div className="relative z-[1] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="inline-flex rounded-full bg-field px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+            <div className="inline-flex rounded-full bg-[#06233d] px-3.5 py-1.5 text-xs font-black uppercase tracking-wide text-white shadow-[0_4px_0_rgba(23,33,27,0.18)]">
               Instructions
             </div>
-            <h4 className="mt-2 text-2xl font-bold leading-tight text-field sm:text-3xl">Ready to train?</h4>
+            <h4 className="mt-2 text-[34px] font-black uppercase leading-none text-white [text-shadow:0_4px_0_#06233d] sm:text-5xl">How to Start</h4>
           </div>
-          <div className="hidden rounded-full bg-white px-4 py-2 text-sm font-bold text-field shadow-sm sm:block">Every touch counts</div>
+          <div className="rounded-full bg-[#06233d] px-4 py-2 text-sm font-black text-white shadow-[0_6px_0_rgba(23,33,27,0.22)]">Get ready. Focus up. Let's train!</div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="relative z-[1] grid gap-4 sm:grid-cols-3">
           {steps.map((step, index) => (
-            <div key={step.title} className="relative rounded-xl border border-green-200 bg-white/90 p-3 shadow-sm">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-field text-lg font-bold text-white">{step.icon}</span>
-                <span className="text-xs font-bold uppercase text-green-700">Step {index + 1}</span>
+            <div key={step.title} className="relative min-h-[242px] overflow-visible rounded-[22px] border-4 border-[#06233d] bg-[#fffdf1] px-4 pb-4 pt-[126px] shadow-[0_8px_0_#06233d,0_16px_22px_rgba(23,33,27,0.2)]">
+              <div
+                className={`absolute -top-6 left-1/2 z-[2] grid h-16 w-16 -translate-x-1/2 place-items-center rounded-full border-[5px] border-white text-3xl font-black shadow-[0_0_0_4px_#06233d,0_7px_0_rgba(6,35,61,0.28)] ${
+                  index === 0 ? "bg-field text-white" : index === 1 ? "bg-[#f6c200] text-[#06233d]" : "bg-[#1683e8] text-white"
+                }`}
+              >
+                {index + 1}
               </div>
-              <div className="text-lg font-bold leading-tight">{step.title}</div>
-              <p className="mt-1 text-sm font-medium leading-snug text-slate-600">{step.detail}</p>
+              <InstructionArt type={step.art} />
+              <div className="mb-2 text-xs font-black uppercase text-green-700">Step {index + 1}</div>
+              <div
+                className={`inline-flex rounded-full px-3.5 py-2 text-xl font-black uppercase leading-none shadow-[0_4px_0_rgba(6,35,61,0.18)] ${
+                  index === 0 ? "bg-field text-white" : index === 1 ? "bg-[#f6c200] text-[#06233d]" : "bg-[#1683e8] text-white"
+                }`}
+              >
+                {step.title}
+              </div>
+              <p className="mt-3 text-sm font-black leading-snug text-slate-700">{step.detail}</p>
             </div>
           ))}
         </div>
+        <div className="relative z-[1] justify-self-center rounded-full bg-[#fffdf1] px-5 py-2 text-base font-black uppercase text-[#06233d] shadow-[0_5px_0_rgba(6,35,61,0.2)]">
+          Train hard. Get better. Have fun!
+        </div>
       </div>
     </section>
+  );
+}
+
+function InstructionArt({ type }: { type: "choose" | "playlist" | "start" }) {
+  if (type === "choose") {
+    return (
+      <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-green-50 via-white to-sky-50">
+        <div className="absolute inset-x-5 bottom-3 h-2 rounded-full bg-green-200" />
+        <div className="absolute left-4 bottom-3 h-12 w-10">
+          <div className="absolute bottom-0 left-0 h-2 w-10 rounded bg-[#c2410c]" />
+          <div className="absolute bottom-2 left-1/2 h-11 w-7 -translate-x-1/2 [clip-path:polygon(50%_0,100%_100%,0_100%)] bg-[#f97316]" />
+          <div className="absolute bottom-5 left-1/2 h-1.5 w-5 -translate-x-1/2 rounded bg-white/90" />
+          <div className="absolute bottom-8 left-1/2 h-1.5 w-3.5 -translate-x-1/2 rounded bg-white/90" />
+        </div>
+        <div className="absolute right-4 bottom-3 h-12 w-10">
+          <div className="absolute bottom-0 left-0 h-2 w-10 rounded bg-[#c2410c]" />
+          <div className="absolute bottom-2 left-1/2 h-11 w-7 -translate-x-1/2 [clip-path:polygon(50%_0,100%_100%,0_100%)] bg-[#fb923c]" />
+          <div className="absolute bottom-5 left-1/2 h-1.5 w-5 -translate-x-1/2 rounded bg-white/90" />
+          <div className="absolute bottom-8 left-1/2 h-1.5 w-3.5 -translate-x-1/2 rounded bg-white/90" />
+        </div>
+        <div className="absolute left-1/2 top-4 h-[58px] w-[58px] -translate-x-1/2 rounded-full border-[4px] border-[#06233d] bg-white shadow-[0_5px_0_rgba(23,33,27,0.12)]">
+          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-[5px] bg-[#06233d]" />
+          <div className="absolute left-2 top-2 h-3 w-3 rounded-full bg-[#2dd4bf]" />
+          <div className="absolute right-2 top-3 h-3 w-3 rounded-full bg-[#2563eb]" />
+          <div className="absolute bottom-2 left-3 h-3 w-3 rounded-full bg-[#ef4444]" />
+          <div className="absolute bottom-2 right-3 h-3 w-3 rounded-full bg-[#facc15]" />
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-[#06233d] px-2 py-0.5 text-[10px] font-black text-white">2026</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === "playlist") {
+    return (
+      <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-yellow-50 to-white">
+        <div className="absolute left-1/2 top-9 h-10 w-24 -translate-x-1/2 rounded-xl bg-[#06233d]" />
+        <div className="absolute left-[42%] top-4 h-11 w-12 -rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
+          <div className="absolute left-4 top-3 h-0 w-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-field" />
+        </div>
+        <div className="absolute left-[52%] top-3 h-11 w-12 rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
+          <div className="absolute left-4 top-3 h-0 w-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-[#1683e8]" />
+        </div>
+        <div className="absolute left-1/2 top-[57px] -translate-x-1/2 text-xs font-black uppercase text-white">Playlist</div>
+        <div className="absolute bottom-3 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-[#f6c200]" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-field to-green-400">
+      <div className="absolute inset-y-0 left-1/2 w-px bg-white/45" />
+      <div className="absolute left-1/2 top-1/2 h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/60" />
+      <div className="absolute left-1/2 top-1/2 h-0 w-0 -translate-x-[35%] -translate-y-1/2 border-y-[18px] border-l-[28px] border-y-transparent border-l-white drop-shadow-sm" />
+    </div>
   );
 }
 
@@ -1204,6 +1299,7 @@ function PlayersPage({
   setSelectedPlayerId: (id: string) => void;
 }) {
   const [draft, setDraft] = useState({ name: "", notes: "" });
+  const selectedPlayer = state.players.find((player) => player.id === selectedPlayerId) ?? state.players[0];
 
   const addPlayer = () => {
     if (!draft.name.trim()) return;
@@ -1215,6 +1311,28 @@ function PlayersPage({
 
   return (
     <PageShell title="Players" description="Add, edit, and delete players. Assign drills from the drill page.">
+      {selectedPlayer && (
+        <section className="mb-5 flex items-center gap-5 rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white">
+            {selectedPlayer.photoDataUrl ? (
+              <img src={selectedPlayer.photoDataUrl} alt={`${selectedPlayer.name} photo`} className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-16 w-16 place-items-center rounded-b-lg rounded-t-2xl bg-field text-2xl font-black text-white [clip-path:polygon(18%_12%,34%_0,66%_0,82%_12%,100%_22%,88%_42%,78%_36%,78%_100%,22%_100%,22%_36%,12%_42%,0_22%)]">
+                10
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-3xl font-black">{selectedPlayer.name}</h3>
+            <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-600 sm:gap-8">
+              <span>Position: Midfielder</span>
+              <span>Age: 6</span>
+              <span>Foot: Right</span>
+            </div>
+            <p className="mt-2 text-sm text-slate-600">{selectedPlayer.notes || "Selected player profile"}</p>
+          </div>
+        </section>
+      )}
       <FormGrid>
         <TextField label="Player name" value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
         <TextField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
@@ -1412,6 +1530,7 @@ function TimerPanel({
   onStart,
   onPause,
   onReset,
+  onNext,
   compact = false,
   countHistory = [],
   pendingCountSave = false,
@@ -1429,6 +1548,7 @@ function TimerPanel({
   onStart: () => void;
   onPause: () => void;
   onReset: () => void;
+  onNext?: () => void;
   onSaveSession: () => void;
   compact?: boolean;
   countHistory?: DrillCountEntry[];
@@ -1473,7 +1593,7 @@ function TimerPanel({
             </label>
           </div>
           <div className="text-2xl font-black tracking-wider tabular-nums text-slate-900">{formatTimeHms(seconds)}</div>
-          <div className="grid grid-cols-3 gap-1 sm:flex">
+          <div className="grid grid-cols-4 gap-1 sm:flex">
             <ActionButton onClick={onStart} icon={Play} disabled={running} compact>
               Start
             </ActionButton>
@@ -1482,6 +1602,9 @@ function TimerPanel({
             </ActionButton>
             <ActionButton onClick={onReset} icon={RotateCcw} variant="light" compact>
               Reset
+            </ActionButton>
+            <ActionButton onClick={onNext ?? (() => {})} icon={SkipForward} variant="light" disabled={!onNext} compact>
+              Next
             </ActionButton>
           </div>
         </div>
