@@ -82,14 +82,31 @@
       .video-wrap.iframe-loaded.playing:not(.blocked-preview) .video-fallback { display:none; }
       .video-fallback { position:absolute; inset:0; z-index:3; display:grid; place-items:center; background:rgba(10,20,14,.16); color:#fff; text-align:center; text-decoration:none; font-weight:900; }
       .video-fallback.playing { display:grid; background:rgba(10,20,14,.22); }
-      .video-fallback.playing span { background:rgba(0,0,0,.58); border-radius:999px; padding:8px 12px; font-size:13px; }
+      .video-fallback.playing > span, .video-fallback.playing .video-fallback-content { background:rgba(0,0,0,.58); border-radius:22px; padding:10px 14px; font-size:13px; }
       .video-fallback.playing .play-dot { display:none; }
+      .video-fallback > span::before { content:"🏃 ⚽"; display:block; margin:0 auto 8px; font-size:34px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.3)); }
+      .video-fallback-content { display:grid; justify-items:center; gap:8px; }
+      .video-fallback-text { text-shadow:0 2px 8px rgba(0,0,0,.45); }
+      .runner-icon { width:86px; height:62px; filter:drop-shadow(0 5px 6px rgba(0,0,0,.25)); }
+      .runner-icon .field-line { stroke:#d9fbe4; stroke-width:4; stroke-linecap:round; opacity:.75; }
+      .runner-icon .kid-line { stroke:#fff; stroke-width:7; stroke-linecap:round; stroke-linejoin:round; }
+      .runner-icon .kid-head { fill:#fff; stroke:#0f5132; stroke-width:4; }
+      .runner-icon .ball { fill:#fff; stroke:#0f5132; stroke-width:4; }
+      .runner-icon .panel { fill:#0f5132; }
       .video-countdown-overlay { position:absolute; top:14px; right:14px; z-index:6; pointer-events:none; display:none; min-width:118px; border-radius:999px; background:rgba(8,34,21,.86); color:#fff; box-shadow:0 10px 28px rgba(0,0,0,.28); padding:10px 14px; text-align:center; border:1px solid rgba(255,255,255,.28); }
       .video-countdown-overlay.show { display:block; }
       .video-countdown-overlay span { display:block; color:#bdf7cf; font-size:10px; font-weight:900; line-height:1; letter-spacing:.08em; text-transform:uppercase; }
       .video-countdown-overlay strong { display:block; margin-top:3px; font-size:24px; line-height:1; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:.03em; }
+      .runner-countdown { position:absolute; left:14px; right:14px; bottom:14px; z-index:7; display:none; pointer-events:none; }
+      .runner-countdown.show { display:block; }
+      .runner-track { position:relative; height:36px; border-radius:999px; background:rgba(8,34,21,.72); border:1px solid rgba(255,255,255,.32); overflow:hidden; box-shadow:0 10px 24px rgba(0,0,0,.28); }
+      .runner-track::before { content:""; position:absolute; left:12px; right:78px; top:50%; height:4px; transform:translateY(-50%); border-radius:999px; background:rgba(255,255,255,.34); }
+      .runner-progress { position:absolute; left:12px; top:50%; height:4px; width:calc((100% - 90px) * var(--runner-progress, 0)); transform:translateY(-50%); border-radius:999px; background:#22c55e; }
+      .runner-marker { position:absolute; left:calc(12px + (100% - 90px) * var(--runner-progress, 0)); top:50%; display:flex; align-items:center; gap:2px; transform:translate(-50%,-50%); font-size:24px; line-height:1; filter:drop-shadow(0 3px 5px rgba(0,0,0,.35)); transition:left .25s linear; }
+      .runner-player { display:inline-block; transform:scaleX(-1); transform-origin:center; }
+      .runner-countdown-time { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#fff; font-size:12px; font-weight:900; font-variant-numeric:tabular-nums; background:rgba(0,0,0,.38); border-radius:999px; padding:4px 8px; }
       .video-title { position:absolute; left:18px; right:18px; bottom:14px; z-index:1; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.65); font-weight:900; font-size:20px; }
-      .play-dot { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.92); color:#1f7a24; font-size:42px; margin:0 auto 12px; }
+      .play-dot { width:76px; height:76px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.92); color:#1f7a24; font-size:38px; margin:0 auto 2px; }
       .timer { background: #0f172a; color: #fff; text-align: center; border-radius: 8px; font-size: 48px; font-weight: 800; padding: 24px; margin: 16px 0; font-variant-numeric: tabular-nums; }
       .buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .progressbar { height: 12px; border-radius: 999px; background: #e9efeb; overflow: hidden; }
@@ -176,55 +193,53 @@
       .player-photo-box { aspect-ratio:1/1; border:1px dashed #aebdb4; border-radius:8px; background:#f4f7f5; overflow:hidden; display:grid; place-items:center; color:#64746a; font-size:12px; font-weight:800; text-align:center; padding:8px; cursor:pointer; }
       .player-photo-card input { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
       .video-stage { grid-column:1/-1; width:min(100%, 820px); justify-self:center; }
-      .training-instructions { margin:0 0 16px; overflow:hidden; border:4px solid #fff; background:linear-gradient(135deg,#25a742,#78d83d); border-radius:26px; box-shadow:0 18px 38px rgba(21,128,61,.22), inset 0 0 0 2px rgba(21,128,61,.18); font-family:"Fredoka", Inter, ui-sans-serif, system-ui, sans-serif; }
+      .training-instructions { margin:0 0 16px; overflow:hidden; border:4px solid #fff; background:linear-gradient(135deg,#22c55e 0%, #84cc16 52%, #16a34a 100%); border-radius:32px; box-shadow:0 18px 38px rgba(21,128,61,.22), inset 0 0 0 2px rgba(21,128,61,.18); font-family:"Fredoka", Inter, ui-sans-serif, system-ui, sans-serif; }
       .video-stage > .training-instructions { display:none; }
-      .training-instructions-inner { position:relative; display:grid; gap:16px; padding:20px; color:#17211b; background:repeating-linear-gradient(90deg, rgba(255,255,255,.1) 0 9%, transparent 9% 18%), radial-gradient(circle at 16% 18%, rgba(255,255,255,.24) 0 3px, transparent 4px), radial-gradient(circle at 78% 12%, rgba(255,255,255,.18) 0 3px, transparent 4px), linear-gradient(90deg, transparent 0 49.7%, rgba(255,255,255,.28) 49.7% 50.3%, transparent 50.3%); }
-      .training-instructions-inner::before { content:""; position:absolute; inset:12px; border:2px solid rgba(255,255,255,.5); border-radius:22px; pointer-events:none; }
-      .training-instructions-inner::after { content:""; position:absolute; left:50%; top:50%; width:68px; height:68px; margin:-34px 0 0 -34px; border:2px solid rgba(255,255,255,.45); border-radius:999px; pointer-events:none; }
-      .field-layout { position:absolute; inset:0; pointer-events:none; opacity:.36; }
-      .field-layout span { position:absolute; display:block; }
-      .field-layout .penalty-left { top:22px; bottom:22px; left:20px; width:18%; border:2px solid rgba(255,255,255,.68); border-left:0; border-radius:0 8px 8px 0; }
-      .field-layout .penalty-right { top:22px; bottom:22px; right:20px; width:18%; border:2px solid rgba(255,255,255,.68); border-right:0; border-radius:8px 0 0 8px; }
-      .field-layout .goal-left { top:34%; bottom:34%; left:20px; width:8%; border:2px solid rgba(255,255,255,.68); border-left:0; border-radius:0 6px 6px 0; }
-      .field-layout .goal-right { top:34%; bottom:34%; right:20px; width:8%; border:2px solid rgba(255,255,255,.68); border-right:0; border-radius:6px 0 0 6px; }
-      .field-layout .spot-left { left:13%; top:50%; width:6px; height:6px; transform:translateY(-50%); border-radius:999px; background:rgba(255,255,255,.9); }
-      .field-layout .spot-right { right:13%; top:50%; width:6px; height:6px; transform:translateY(-50%); border-radius:999px; background:rgba(255,255,255,.9); }
-      .field-layout .arc-left { left:18%; top:50%; width:96px; height:96px; transform:translateY(-50%); border:2px solid rgba(255,255,255,.6); border-radius:999px; }
-      .field-layout .arc-right { right:18%; top:50%; width:96px; height:96px; transform:translateY(-50%); border:2px solid rgba(255,255,255,.6); border-radius:999px; }
-      .instruction-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; position:relative; z-index:1; }
+      .training-instructions-inner { position:relative; display:grid; gap:20px; padding:18px; color:#06233d; background:repeating-linear-gradient(90deg, rgba(255,255,255,.1) 0 10%, transparent 10% 20%); }
+      .field-lines { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.3; }
+      .instruction-top { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; position:relative; z-index:1; color:#fff; }
       .instruction-badge { display:inline-flex; border-radius:999px; background:#06233d; color:#fff; padding:6px 14px; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; box-shadow:0 4px 0 rgba(23,33,27,.18); }
-      .instruction-title { margin-top:8px; color:#fff; font-size:clamp(32px,5vw,58px); line-height:.95; font-weight:900; text-transform:uppercase; text-shadow:0 4px 0 #06233d; }
-      .instruction-pill { border-radius:999px; background:#06233d; color:#fff; padding:9px 16px; font-size:15px; font-weight:900; box-shadow:0 6px 0 rgba(23,33,27,.22); }
-      .instruction-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; position:relative; z-index:1; }
-      .instruction-step { --step-color:#15803d; position:relative; overflow:visible; min-height:242px; border:4px solid #06233d; border-radius:22px; background:#fffdf1; padding:126px 16px 18px; box-shadow:0 8px 0 #06233d, 0 16px 22px rgba(23,33,27,.2); }
+      .instruction-title { margin-top:8px; color:#fff; font-size:clamp(30px,4vw,42px); line-height:1; font-weight:900; text-shadow:0 3px 0 #06233d; }
+      .instruction-subtitle { margin-top:8px; max-width:620px; color:rgba(255,255,255,.92); font-size:16px; line-height:1.25; font-weight:800; }
+      .instruction-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; position:relative; z-index:1; }
+      .instruction-step { --step-color:#15803d; position:relative; min-height:190px; border:3px solid #06233d; border-radius:24px; background:rgba(255,255,255,.95); padding:16px; box-shadow:0 7px 0 #06233d, 0 16px 20px rgba(23,33,27,.18); }
       .instruction-step:nth-child(2) { --step-color:#f6c200; }
       .instruction-step:nth-child(3) { --step-color:#1683e8; }
-      .instruction-step::before { content:""; position:absolute; left:16px; right:16px; top:18px; height:92px; border:3px solid rgba(6,35,61,.18); border-radius:18px; background:linear-gradient(135deg,#ffffff,#effaf0); pointer-events:none; }
-      .instruction-step::after { content:counter(step); counter-increment:step; position:absolute; left:50%; top:-22px; width:64px; height:64px; display:grid; place-items:center; transform:translateX(-50%); border:5px solid #fff; border-radius:999px; background:var(--step-color); color:#fff; font-size:34px; font-weight:900; box-shadow:0 0 0 4px #06233d, 0 7px 0 rgba(6,35,61,.28); pointer-events:none; }
-      .instruction-grid { counter-reset:step; }
-      .instruction-step:nth-child(1)::before { background:linear-gradient(135deg,#e9fff2,#fff,#eef7ff); }
-      .instruction-step:nth-child(2)::before { background:linear-gradient(#06233d,#06233d) 50% 64%/82px 36px no-repeat, linear-gradient(#fff,#fff) 45% 28%/42px 34px no-repeat, linear-gradient(#fff,#fff) 56% 24%/42px 34px no-repeat, linear-gradient(135deg,#fff7cc,#fff); }
-      .instruction-step:nth-child(2)::after { color:#06233d; }
-      .instruction-step:nth-child(3)::before { background:radial-gradient(circle at 51% 47%, #1683e8 0 36px, #0b4ea2 37px 45px, transparent 46px), linear-gradient(90deg, transparent 0 49%, rgba(255,255,255,.55) 49% 51%, transparent 51%), linear-gradient(135deg,#27a74e,#39c45f); }
-      .instruction-step:nth-child(3) .instruction-step-head::after { content:""; position:absolute; top:52px; left:50%; width:0; height:0; transform:translateX(-35%); border-top:18px solid transparent; border-bottom:18px solid transparent; border-left:28px solid #fff; z-index:1; }
-      .instruction-step-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-      .instruction-icon { display:none; }
-      .instruction-number { color:#15803d; font-size:12px; font-weight:900; text-transform:uppercase; }
-      .instruction-step strong { display:block; width:max-content; max-width:100%; border-radius:999px; background:var(--step-color); color:#06233d; padding:8px 14px; font-size:20px; line-height:1.05; text-transform:uppercase; box-shadow:0 4px 0 rgba(6,35,61,.18); }
-      .instruction-step:nth-child(1) strong, .instruction-step:nth-child(3) strong { color:#fff; }
-      .instruction-step p { margin:10px 0 0; color:#435047; font-size:15px; line-height:1.25; font-weight:800; }
-      .instruction-footer { position:relative; z-index:1; justify-self:center; border-radius:999px; background:#fffdf1; color:#06233d; padding:10px 18px; font-size:18px; font-weight:900; text-transform:uppercase; box-shadow:0 5px 0 rgba(6,35,61,.2); }
-      .choose-drill-art { position:absolute; left:16px; right:16px; top:18px; height:92px; overflow:hidden; border-radius:18px; pointer-events:none; }
-      .choose-drill-art::before { content:""; position:absolute; left:22px; right:22px; bottom:10px; height:8px; border-radius:999px; background:#bbf7d0; }
-      .cone-art { position:absolute; bottom:10px; width:42px; height:54px; }
-      .cone-art.left { left:18px; }
-      .cone-art.right { right:18px; }
-      .cone-art::before { content:""; position:absolute; left:50%; bottom:8px; width:30px; height:46px; transform:translateX(-50%); clip-path:polygon(50% 0,100% 100%,0 100%); background:#f97316; }
-      .cone-art.right::before { background:#fb923c; }
-      .cone-art::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; border-radius:4px; background:#c2410c; box-shadow:10px -18px 0 -7px rgba(255,255,255,.9), 13px -32px 0 -9px rgba(255,255,255,.9); }
-      .worldcup-ball { position:absolute; left:50%; top:12px; width:58px; height:58px; transform:translateX(-50%); border:4px solid #06233d; border-radius:50%; background:#fff; box-shadow:0 5px 0 rgba(23,33,27,.12); }
-      .worldcup-ball::before { content:""; position:absolute; left:50%; top:50%; width:17px; height:17px; transform:translate(-50%,-50%); border-radius:5px; background:#06233d; box-shadow:-18px -12px 0 -5px #2dd4bf, 18px -10px 0 -5px #2563eb, -15px 18px 0 -5px #ef4444, 15px 18px 0 -5px #facc15; }
-      .worldcup-ball::after { content:"2026"; position:absolute; left:50%; bottom:-18px; transform:translateX(-50%); border-radius:999px; background:#06233d; color:#fff; padding:1px 7px; font-size:10px; font-weight:900; line-height:1.3; }
+      .step-badge { position:absolute; right:16px; top:-14px; width:40px; height:40px; display:grid; place-items:center; border:3px solid #fff; border-radius:999px; background:var(--step-color); color:#fff; font-size:16px; font-weight:900; box-shadow:0 0 0 3px #06233d, 0 5px 0 rgba(6,35,61,.2); }
+      .instruction-step:nth-child(2) .step-badge { color:#06233d; }
+      .instruction-number { display:block; margin-top:12px; color:#15803d; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; }
+      .instruction-step strong { display:block; margin-top:2px; color:#06233d; font-size:22px; line-height:1.05; font-weight:900; }
+      .instruction-step p { margin:6px 0 0; color:#475569; font-size:15px; line-height:1.25; font-weight:800; }
+      .instruction-footer { position:relative; z-index:1; justify-self:center; border-radius:999px; background:rgba(255,255,255,.95); color:#06233d; padding:10px 20px; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:.04em; box-shadow:0 5px 0 rgba(6,35,61,.18); }
+      .instruction-art { position:relative; height:72px; margin-bottom:8px; overflow:hidden; border-radius:16px; border:1px solid rgba(21,128,61,.18); background:linear-gradient(135deg,#dff8e8,#ffffff); }
+      .instruction-art::before { content:""; position:absolute; inset:10px; border:1px dashed rgba(21,128,61,.22); border-radius:999px; }
+      .instruction-art.choose { background:linear-gradient(135deg,#e9fff2,#fff,#eef7ff); }
+      .instruction-art.playlist { background:linear-gradient(135deg,#fff7cc,#fff); }
+      .instruction-art.start { background:linear-gradient(135deg,#15803d,#39c45f); }
+      .instruction-art.start::before { border-style:solid; border-color:rgba(255,255,255,.36); }
+      .mini-cone { position:absolute; bottom:10px; width:30px; height:40px; }
+      .mini-cone.left { left:20px; }
+      .mini-cone.right { right:20px; }
+      .mini-cone::before { content:""; position:absolute; left:50%; bottom:6px; width:23px; height:31px; transform:translateX(-50%); clip-path:polygon(50% 0,100% 100%,0 100%); background:#f97316; }
+      .mini-cone.right::before { background:#fb923c; }
+      .mini-cone::after { content:""; position:absolute; left:0; right:0; bottom:0; height:7px; border-radius:4px; background:#c2410c; box-shadow:8px -14px 0 -7px rgba(255,255,255,.9), 10px -24px 0 -9px rgba(255,255,255,.9); }
+      .mini-ball { position:absolute; left:50%; top:10px; width:42px; height:42px; transform:translateX(-50%); border:3px solid #06233d; border-radius:50%; background:#fff; box-shadow:0 4px 0 rgba(23,33,27,.12); }
+      .mini-ball::before { content:""; position:absolute; left:50%; top:50%; width:12px; height:12px; transform:translate(-50%,-50%); border-radius:4px; background:#06233d; box-shadow:-13px -8px 0 -5px #2dd4bf, 13px -8px 0 -5px #2563eb, -11px 13px 0 -5px #ef4444, 11px 13px 0 -5px #facc15; }
+      .mini-board { position:absolute; left:50%; bottom:10px; width:54px; height:34px; transform:translateX(-50%); border:2px solid rgba(6,35,61,.18); border-radius:9px; background:rgba(255,255,255,.82); }
+      .mini-board::before { content:""; position:absolute; left:9px; top:8px; width:8px; height:8px; border:2px solid #06233d; border-radius:999px; }
+      .mini-board::after { content:""; position:absolute; right:9px; top:8px; width:24px; height:5px; border-radius:999px; background:#15803d; box-shadow:0 13px 0 #86efac; }
+      .mini-playlist-bin { position:absolute; left:50%; top:31px; width:78px; height:28px; transform:translateX(-50%); border-radius:9px; background:#06233d; }
+      .mini-card { position:absolute; top:14px; width:38px; height:32px; border:2px solid rgba(6,35,61,.18); border-radius:9px; background:#fff; }
+      .mini-card.one { left:38%; transform:rotate(-6deg); }
+      .mini-card.two { left:52%; transform:rotate(6deg); }
+      .mini-card::before { content:""; position:absolute; left:12px; top:8px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:11px solid #15803d; }
+      .mini-plus { position:absolute; left:50%; bottom:8px; display:grid; place-items:center; width:22px; height:22px; transform:translateX(-50%); border-radius:999px; background:#f6c200; color:#06233d; font-weight:900; }
+      .mini-field { position:absolute; inset:10px; border-radius:14px; background:#15803d; overflow:hidden; }
+      .mini-field::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:2px; background:rgba(255,255,255,.38); }
+      .mini-field::after { content:""; position:absolute; left:50%; top:50%; width:32px; height:32px; margin:-16px 0 0 -16px; border:2px solid rgba(255,255,255,.55); border-radius:999px; }
+      .mini-play { position:absolute; left:50%; top:50%; width:40px; height:40px; transform:translate(-50%,-50%); border-radius:999px; background:#1683e8; box-shadow:0 4px 0 rgba(6,35,61,.2); }
+      .mini-play::before { content:""; position:absolute; left:16px; top:11px; width:0; height:0; border-top:11px solid transparent; border-bottom:11px solid transparent; border-left:17px solid #fff; }
+      .mini-time { position:absolute; right:16px; bottom:14px; border-radius:6px; background:rgba(255,255,255,.92); color:#06233d; padding:3px 7px; font-size:10px; font-weight:900; }
       .instruction-art { position:relative; height:82px; margin-bottom:10px; overflow:hidden; border-radius:14px; border:1px solid rgba(21,128,61,.16); background:linear-gradient(135deg,#dff8e8,#ffffff); }
       .instruction-art::before { content:""; position:absolute; inset:10px; border:1px dashed rgba(21,128,61,.2); border-radius:999px; }
       .instruction-art.choose { background:linear-gradient(135deg,#dff8e8,#f8fff9); }
@@ -1018,6 +1033,7 @@
       let tick;
       let restTick;
       let companionVideoWindow = null;
+      let lastVideoStartAt = 0;
       function normalizeState() {
         if (!state || typeof state !== "object") state = freshStarter();
         if (!Array.isArray(state.drills) || !state.drills.length) state.drills = freshStarter().drills;
@@ -1208,8 +1224,10 @@
         const id = videoId(url);
         if (!id) return `<div class="video"></div>`;
         const label = selectedVideoDrill()?.name || "YouTube drill video";
+        const runnerProgress = state.duration ? Math.max(0, Math.min(1, 1 - state.seconds / state.duration)) : 0;
+        const runnerCountdown = `<div class="runner-countdown ${state.running ? "show" : ""}" id="runnerCountdown" style="--runner-progress:${runnerProgress.toFixed(3)}"><div class="runner-track"><div class="runner-progress"></div><div class="runner-marker" aria-hidden="true"><span class="runner-player">&#127939;</span><span>&#9917;</span></div><div class="runner-countdown-time">${fmtHms(state.seconds)}</div></div></div>`;
         const fallback = `<a class="video-fallback ${state.running ? "playing" : ""}" href="${esc(url)}" target="_blank" onclick="playVideoFromTap(event);openCompanionVideoIfNeeded(this.href)"><span><span class="play-dot">▶</span>${state.running ? "Open video if this display blocks YouTube" : "Tap to play video"}</span></a>`;
-        return `<div class="video-wrap ${state.running ? "playing" : ""}" id="videoWrap"><iframe id="tutorialVideo" src="${embed(url, state.running)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen onload="this.closest('.video-wrap')?.classList.add('iframe-loaded')"></iframe><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><div class="video-countdown-overlay ${state.running ? "show" : ""}" id="videoCountdown"><span>Time left</span><strong>${fmtHms(state.seconds)}</strong></div><div class="video-title">${esc(label)}</div>${fallback}</div>`;
+        return `<div class="video-wrap ${state.running ? "playing" : ""}" id="videoWrap"><iframe id="tutorialVideo" src="${embed(url, state.running)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen onload="this.closest('.video-wrap')?.classList.add('iframe-loaded')"></iframe><img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><div class="video-countdown-overlay ${state.running ? "show" : ""}" id="videoCountdown"><span>Time left</span><strong>${fmtHms(state.seconds)}</strong></div>${runnerCountdown}<div class="video-title">${esc(label)}</div>${fallback}</div>`;
       }
       function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c])); }
 
@@ -1546,6 +1564,7 @@
         const url = selectedVideoDrill()?.videoLink || videoUrl();
         const id = videoId(url);
         if (!id) return;
+        lastVideoStartAt = Date.now();
         mountVideoIframe(url, true);
         commandIframePlay();
         setTimeout(commandIframePlay, 250);
@@ -1558,6 +1577,7 @@
         const url = selectedVideoDrill()?.videoLink || videoUrl();
         const wrap = document.getElementById("videoWrap");
         const fallback = wrap?.querySelector(".video-fallback");
+        lastVideoStartAt = Date.now();
         mountVideoIframe(url, true);
         wrap?.classList.add("playing");
         fallback?.classList.add("playing");
@@ -1628,6 +1648,19 @@
         const iframe = document.getElementById("tutorialVideo");
         try { iframe?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "pauseVideo", args: [] }), "*"); } catch {}
       }
+      function pauseTimerFromVideo() {
+        if (!state.running) return;
+        if (Date.now() - lastVideoStartAt < 1600) return;
+        timer(false);
+      }
+      window.addEventListener("message", event => {
+        let data = event.data;
+        if (typeof data === "string") {
+          try { data = JSON.parse(data); } catch { return; }
+        }
+        if (!data || data.event !== "infoDelivery") return;
+        if (data.info?.playerState === 2) pauseTimerFromVideo();
+      });
       function ensureYouTubeApi(callback) {
         if (window.YT?.Player) {
           callback();
@@ -1695,20 +1728,34 @@
           <div class="panel-head"><div class="panel-title">Tutorial Video</div></div>
           <div class="training-instructions">
             <div class="training-instructions-inner">
-              <div class="field-layout" aria-hidden="true"><span class="penalty-left"></span><span class="penalty-right"></span><span class="goal-left"></span><span class="goal-right"></span><span class="spot-left"></span><span class="spot-right"></span><span class="arc-left"></span><span class="arc-right"></span></div>
+              <svg class="field-lines" viewBox="0 0 100 58" preserveAspectRatio="none" aria-hidden="true">
+                <rect x="3" y="4" width="94" height="50" rx="2" fill="none" stroke="white" stroke-width=".75"></rect>
+                <line x1="50" y1="4" x2="50" y2="54" stroke="white" stroke-width=".75"></line>
+                <circle cx="50" cy="29" r="7.8" fill="none" stroke="white" stroke-width=".75"></circle>
+                <circle cx="50" cy="29" r=".8" fill="white"></circle>
+                <rect x="3" y="16" width="16" height="26" fill="none" stroke="white" stroke-width=".75"></rect>
+                <rect x="3" y="22" width="7" height="14" fill="none" stroke="white" stroke-width=".75"></rect>
+                <circle cx="13" cy="29" r=".65" fill="white"></circle>
+                <path d="M19 22a8 8 0 0 1 0 16" fill="none" stroke="white" stroke-width=".75"></path>
+                <rect x="81" y="16" width="16" height="26" fill="none" stroke="white" stroke-width=".75"></rect>
+                <rect x="90" y="22" width="7" height="14" fill="none" stroke="white" stroke-width=".75"></rect>
+                <circle cx="87" cy="29" r=".65" fill="white"></circle>
+                <path d="M81 22a8 8 0 0 0 0 16" fill="none" stroke="white" stroke-width=".75"></path>
+                <path d="M3 9a5 5 0 0 0 5-5M97 9a5 5 0 0 1-5-5M3 49a5 5 0 0 1 5 5M97 49a5 5 0 0 0-5 5" fill="none" stroke="white" stroke-width=".75"></path>
+              </svg>
               <div class="instruction-top">
                 <div>
                   <div class="instruction-badge">Instructions</div>
-                  <div class="instruction-title">How to Start</div>
+                  <div class="instruction-title">How to Start Training</div>
+                  <div class="instruction-subtitle">Choose your drills, build your playlist, and press Start.</div>
                 </div>
-                <div class="instruction-pill">Get ready. Focus up. Let's train!</div>
               </div>
               <div class="instruction-grid">
-                <div class="instruction-step"><div class="choose-drill-art" aria-hidden="true"><span class="cone-art left"></span><span class="worldcup-ball"></span><span class="cone-art right"></span></div><div class="instruction-step-head"><span class="instruction-icon">1</span><span class="instruction-number">Step 1</span></div><strong>Choose Your Drills</strong><p>Pick the skills you want to train today.</p></div>
-                <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">2</span><span class="instruction-number">Step 2</span></div><strong>Add To Playlist</strong><p>Build your practice lineup.</p></div>
-                <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">3</span><span class="instruction-number">Step 3</span></div><strong>Press Start When Ready</strong><p>Start the timer and follow the video.</p></div>
+                <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 01</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
+                <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 02</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
+                <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 03</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
               </div>
-              <div class="instruction-footer">Train hard. Get better. Have fun!</div>
+              <div class="instruction-footer">Every touch counts.</div>
             </div>
           </div>
           <div class="video-controls">
@@ -1720,20 +1767,34 @@
             <div class="video-stage">
               <div class="training-instructions">
                 <div class="training-instructions-inner">
-                  <div class="field-layout" aria-hidden="true"><span class="penalty-left"></span><span class="penalty-right"></span><span class="goal-left"></span><span class="goal-right"></span><span class="spot-left"></span><span class="spot-right"></span><span class="arc-left"></span><span class="arc-right"></span></div>
+                  <svg class="field-lines" viewBox="0 0 100 58" preserveAspectRatio="none" aria-hidden="true">
+                    <rect x="3" y="4" width="94" height="50" rx="2" fill="none" stroke="white" stroke-width=".75"></rect>
+                    <line x1="50" y1="4" x2="50" y2="54" stroke="white" stroke-width=".75"></line>
+                    <circle cx="50" cy="29" r="7.8" fill="none" stroke="white" stroke-width=".75"></circle>
+                    <circle cx="50" cy="29" r=".8" fill="white"></circle>
+                    <rect x="3" y="16" width="16" height="26" fill="none" stroke="white" stroke-width=".75"></rect>
+                    <rect x="3" y="22" width="7" height="14" fill="none" stroke="white" stroke-width=".75"></rect>
+                    <circle cx="13" cy="29" r=".65" fill="white"></circle>
+                    <path d="M19 22a8 8 0 0 1 0 16" fill="none" stroke="white" stroke-width=".75"></path>
+                    <rect x="81" y="16" width="16" height="26" fill="none" stroke="white" stroke-width=".75"></rect>
+                    <rect x="90" y="22" width="7" height="14" fill="none" stroke="white" stroke-width=".75"></rect>
+                    <circle cx="87" cy="29" r=".65" fill="white"></circle>
+                    <path d="M81 22a8 8 0 0 0 0 16" fill="none" stroke="white" stroke-width=".75"></path>
+                    <path d="M3 9a5 5 0 0 0 5-5M97 9a5 5 0 0 1-5-5M3 49a5 5 0 0 1 5 5M97 49a5 5 0 0 0-5 5" fill="none" stroke="white" stroke-width=".75"></path>
+                  </svg>
                   <div class="instruction-top">
                     <div>
                       <div class="instruction-badge">Instructions</div>
-                      <div class="instruction-title">How to Start</div>
+                      <div class="instruction-title">How to Start Training</div>
+                      <div class="instruction-subtitle">Choose your drills, build your playlist, and press Start.</div>
                     </div>
-                    <div class="instruction-pill">Get ready. Focus up. Let's train!</div>
                   </div>
                   <div class="instruction-grid">
-                    <div class="instruction-step"><div class="choose-drill-art" aria-hidden="true"><span class="cone-art left"></span><span class="worldcup-ball"></span><span class="cone-art right"></span></div><div class="instruction-step-head"><span class="instruction-icon">1</span><span class="instruction-number">Step 1</span></div><strong>Choose Your Drills</strong><p>Pick the skills you want to train today.</p></div>
-                    <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">2</span><span class="instruction-number">Step 2</span></div><strong>Add To Playlist</strong><p>Build your practice lineup.</p></div>
-                    <div class="instruction-step"><div class="instruction-step-head"><span class="instruction-icon">3</span><span class="instruction-number">Step 3</span></div><strong>Press Start When Ready</strong><p>Start the timer and follow the video.</p></div>
+                    <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 01</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
+                    <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 02</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
+                    <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 03</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
                   </div>
-                  <div class="instruction-footer">Train hard. Get better. Have fun!</div>
+                  <div class="instruction-footer">Every touch counts.</div>
                 </div>
               </div>
               ${videoMarkup(video)}
@@ -1817,10 +1878,18 @@
       function renderHomeTimer() { const el = document.getElementById("timerCard"); if (el) el.innerHTML = timerMarkup(); }
       function renderVideoCountdown() {
         const el = document.getElementById("videoCountdown");
-        if (!el) return;
-        el.classList.toggle("show", Boolean(state.running));
-        const value = el.querySelector("strong");
-        if (value) value.textContent = fmtHms(state.seconds);
+        if (el) {
+          el.classList.toggle("show", Boolean(state.running));
+          const value = el.querySelector("strong");
+          if (value) value.textContent = fmtHms(state.seconds);
+        }
+        const runner = document.getElementById("runnerCountdown");
+        if (!runner) return;
+        const runnerProgress = state.duration ? Math.max(0, Math.min(1, 1 - state.seconds / state.duration)) : 0;
+        runner.classList.toggle("show", Boolean(state.running));
+        runner.style.setProperty("--runner-progress", runnerProgress.toFixed(3));
+        const runnerTime = runner.querySelector(".runner-countdown-time");
+        if (runnerTime) runnerTime.textContent = fmtHms(state.seconds);
       }
       function avg(d) { return d.length ? (d.reduce((s,x)=>s+Number(x.rating||0),0)/d.length).toFixed(1) : "0"; }
       function renderPreservingPosition() {

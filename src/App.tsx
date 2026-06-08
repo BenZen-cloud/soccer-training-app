@@ -940,7 +940,7 @@ function HomePage(props: {
             </select>
           </label>
           <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
-            <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} seconds={props.seconds} />
+            <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} seconds={props.seconds} duration={props.duration} onVideoPause={props.onPause} />
             <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
               <TimerPanel
                 seconds={props.seconds}
@@ -1165,98 +1165,81 @@ function HomePage(props: {
 
 function TrainingInstructions() {
   const steps = [
-    { art: "choose" as const, title: "Choose Your Drills", detail: "Pick the skills you want to train today." },
-    { art: "playlist" as const, title: "Add To Playlist", detail: "Build your practice lineup." },
-    { art: "start" as const, title: "Press Start When Ready", detail: "Start the timer and follow the video." },
+    { art: "choose" as const, badge: "01", badgeClass: "bg-field text-white", title: "Choose Drills", detail: "Pick your skills." },
+    { art: "playlist" as const, badge: "02", badgeClass: "bg-[#f6c200] text-[#06233d]", title: "Build Playlist", detail: "Add drills in order." },
+    { art: "start" as const, badge: "03", badgeClass: "bg-[#1683e8] text-white", title: "Start Training", detail: "Follow the video and timer." },
   ];
 
   return (
-    <section className="mb-4 overflow-hidden rounded-[26px] border-4 border-white bg-gradient-to-br from-[#25a742] to-[#78d83d] shadow-[0_18px_38px_rgba(21,128,61,0.22),inset_0_0_0_2px_rgba(21,128,61,0.18)]">
+    <section className="mb-4 overflow-hidden rounded-[32px] border-4 border-white bg-gradient-to-br from-green-500 via-lime-500 to-green-600 shadow-[0_18px_38px_rgba(21,128,61,0.22),inset_0_0_0_2px_rgba(21,128,61,0.18)]">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');`}</style>
-      <div
-        className="relative grid gap-4 p-5 font-['Fredoka',ui-sans-serif] text-slate-900"
-        style={{
-          background:
-            "radial-gradient(circle at 16% 18%, rgba(255,255,255,.24) 0 3px, transparent 4px), radial-gradient(circle at 78% 12%, rgba(255,255,255,.18) 0 3px, transparent 4px), linear-gradient(90deg, transparent 0 49.7%, rgba(255,255,255,.24) 49.7% 50.3%, transparent 50.3%)",
-        }}
-      >
-        <div className="pointer-events-none absolute inset-3 rounded-[22px] border-2 border-white/50" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/45 sm:block" />
-        <div className="pointer-events-none absolute inset-0 opacity-35">
-          <div className="absolute inset-y-0 left-0 w-full bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.12)_0_9%,transparent_9%_18%)]" />
-          <div className="absolute inset-y-5 left-5 w-[18%] rounded-r border-2 border-l-0 border-white/60" />
-          <div className="absolute inset-y-5 right-5 w-[18%] rounded-l border-2 border-r-0 border-white/60" />
-          <div className="absolute inset-y-[34%] left-5 w-[8%] rounded-r border-2 border-l-0 border-white/60" />
-          <div className="absolute inset-y-[34%] right-5 w-[8%] rounded-l border-2 border-r-0 border-white/60" />
-          <div className="absolute left-[13%] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white/80" />
-          <div className="absolute right-[13%] top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-white/80" />
-          <div className="absolute left-[18%] top-1/2 hidden h-24 w-24 -translate-y-1/2 rounded-full border-2 border-white/55 sm:block" />
-          <div className="absolute right-[18%] top-1/2 hidden h-24 w-24 -translate-y-1/2 rounded-full border-2 border-white/55 sm:block" />
-        </div>
-        <div className="relative z-[1] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative grid gap-5 p-4 font-['Fredoka',ui-sans-serif] text-[#06233d] sm:p-6 md:p-7">
+        <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.1)_0_10%,transparent_10%_20%)]" />
+        <SoccerFieldLines />
+        <div className="relative z-[1] flex flex-col items-start gap-2 text-white sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex rounded-full bg-[#06233d] px-3.5 py-1.5 text-xs font-black uppercase tracking-wide text-white shadow-[0_4px_0_rgba(23,33,27,0.18)]">
+            <div className="inline-flex rounded-full bg-[#06233d] px-3.5 py-1.5 text-xs font-black uppercase tracking-wide shadow-[0_4px_0_rgba(23,33,27,0.18)]">
               Instructions
             </div>
-            <h4 className="mt-2 text-[34px] font-black uppercase leading-none text-white [text-shadow:0_4px_0_#06233d] sm:text-5xl">How to Start</h4>
+            <h4 className="mt-2 text-3xl font-black leading-none [text-shadow:0_3px_0_#06233d] sm:text-4xl">How to Start Training</h4>
+            <p className="mt-2 max-w-xl text-sm font-bold text-white/90 sm:text-base">Choose your drills, build your playlist, and press Start.</p>
           </div>
-          <div className="rounded-full bg-[#06233d] px-4 py-2 text-sm font-black text-white shadow-[0_6px_0_rgba(23,33,27,0.22)]">Get ready. Focus up. Let's train!</div>
         </div>
-        <div className="relative z-[1] grid gap-4 sm:grid-cols-3">
-          {steps.map((step, index) => (
-            <div key={step.title} className="relative min-h-[242px] overflow-visible rounded-[22px] border-4 border-[#06233d] bg-[#fffdf1] px-4 pb-4 pt-[126px] shadow-[0_8px_0_#06233d,0_16px_22px_rgba(23,33,27,0.2)]">
+        <div className="relative z-[1] grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+          {steps.map((step) => (
+            <div key={step.title} className="relative min-h-[190px] rounded-3xl border-[3px] border-[#06233d] bg-white/95 p-4 shadow-[0_7px_0_#06233d,0_16px_20px_rgba(23,33,27,0.18)]">
               <div
-                className={`absolute -top-6 left-1/2 z-[2] grid h-16 w-16 -translate-x-1/2 place-items-center rounded-full border-[5px] border-white text-3xl font-black shadow-[0_0_0_4px_#06233d,0_7px_0_rgba(6,35,61,0.28)] ${
-                  index === 0 ? "bg-field text-white" : index === 1 ? "bg-[#f6c200] text-[#06233d]" : "bg-[#1683e8] text-white"
-                }`}
+                className={`absolute -top-3 right-4 grid h-10 w-10 place-items-center rounded-full border-[3px] border-white text-base font-black shadow-[0_0_0_3px_#06233d,0_5px_0_rgba(6,35,61,0.2)] ${step.badgeClass}`}
               >
-                {index + 1}
+                {step.badge}
               </div>
               <InstructionArt type={step.art} />
-              <div className="mb-2 text-xs font-black uppercase text-green-700">Step {index + 1}</div>
-              <div
-                className={`inline-flex rounded-full px-3.5 py-2 text-xl font-black uppercase leading-none shadow-[0_4px_0_rgba(6,35,61,0.18)] ${
-                  index === 0 ? "bg-field text-white" : index === 1 ? "bg-[#f6c200] text-[#06233d]" : "bg-[#1683e8] text-white"
-                }`}
-              >
-                {step.title}
-              </div>
-              <p className="mt-3 text-sm font-black leading-snug text-slate-700">{step.detail}</p>
+              <div className="mt-3 text-[11px] font-black uppercase tracking-wide text-green-700">Step {step.badge}</div>
+              <div className="text-xl font-black leading-tight text-[#06233d]">{step.title}</div>
+              <p className="mt-1 text-sm font-bold leading-snug text-slate-600">{step.detail}</p>
             </div>
           ))}
         </div>
-        <div className="relative z-[1] justify-self-center rounded-full bg-[#fffdf1] px-5 py-2 text-base font-black uppercase text-[#06233d] shadow-[0_5px_0_rgba(6,35,61,0.2)]">
-          Train hard. Get better. Have fun!
+        <div className="relative z-[1] justify-self-center rounded-full bg-white/95 px-5 py-2 text-sm font-black uppercase tracking-wide text-[#06233d] shadow-[0_5px_0_rgba(6,35,61,0.18)]">
+          Every touch counts.
         </div>
       </div>
     </section>
   );
 }
 
+function SoccerFieldLines() {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-30" viewBox="0 0 100 58" preserveAspectRatio="none" aria-hidden="true">
+      <rect x="3" y="4" width="94" height="50" rx="2" fill="none" stroke="white" strokeWidth="0.75" />
+      <line x1="50" y1="4" x2="50" y2="54" stroke="white" strokeWidth="0.75" />
+      <circle cx="50" cy="29" r="7.8" fill="none" stroke="white" strokeWidth="0.75" />
+      <circle cx="50" cy="29" r="0.8" fill="white" />
+      <rect x="3" y="16" width="16" height="26" fill="none" stroke="white" strokeWidth="0.75" />
+      <rect x="3" y="22" width="7" height="14" fill="none" stroke="white" strokeWidth="0.75" />
+      <circle cx="13" cy="29" r="0.65" fill="white" />
+      <path d="M19 22a8 8 0 0 1 0 16" fill="none" stroke="white" strokeWidth="0.75" />
+      <rect x="81" y="16" width="16" height="26" fill="none" stroke="white" strokeWidth="0.75" />
+      <rect x="90" y="22" width="7" height="14" fill="none" stroke="white" strokeWidth="0.75" />
+      <circle cx="87" cy="29" r="0.65" fill="white" />
+      <path d="M81 22a8 8 0 0 0 0 16" fill="none" stroke="white" strokeWidth="0.75" />
+      <path d="M3 9a5 5 0 0 0 5-5M97 9a5 5 0 0 1-5-5M3 49a5 5 0 0 1 5 5M97 49a5 5 0 0 0-5 5" fill="none" stroke="white" strokeWidth="0.75" />
+    </svg>
+  );
+}
+
 function InstructionArt({ type }: { type: "choose" | "playlist" | "start" }) {
   if (type === "choose") {
     return (
-      <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-green-50 via-white to-sky-50">
-        <div className="absolute inset-x-5 bottom-3 h-2 rounded-full bg-green-200" />
-        <div className="absolute left-4 bottom-3 h-12 w-10">
-          <div className="absolute bottom-0 left-0 h-2 w-10 rounded bg-[#c2410c]" />
-          <div className="absolute bottom-2 left-1/2 h-11 w-7 -translate-x-1/2 [clip-path:polygon(50%_0,100%_100%,0_100%)] bg-[#f97316]" />
-          <div className="absolute bottom-5 left-1/2 h-1.5 w-5 -translate-x-1/2 rounded bg-white/90" />
-          <div className="absolute bottom-8 left-1/2 h-1.5 w-3.5 -translate-x-1/2 rounded bg-white/90" />
-        </div>
-        <div className="absolute right-4 bottom-3 h-12 w-10">
-          <div className="absolute bottom-0 left-0 h-2 w-10 rounded bg-[#c2410c]" />
-          <div className="absolute bottom-2 left-1/2 h-11 w-7 -translate-x-1/2 [clip-path:polygon(50%_0,100%_100%,0_100%)] bg-[#fb923c]" />
-          <div className="absolute bottom-5 left-1/2 h-1.5 w-5 -translate-x-1/2 rounded bg-white/90" />
-          <div className="absolute bottom-8 left-1/2 h-1.5 w-3.5 -translate-x-1/2 rounded bg-white/90" />
-        </div>
-        <div className="absolute left-1/2 top-4 h-[58px] w-[58px] -translate-x-1/2 rounded-full border-[4px] border-[#06233d] bg-white shadow-[0_5px_0_rgba(23,33,27,0.12)]">
-          <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-[5px] bg-[#06233d]" />
-          <div className="absolute left-2 top-2 h-3 w-3 rounded-full bg-[#2dd4bf]" />
-          <div className="absolute right-2 top-3 h-3 w-3 rounded-full bg-[#2563eb]" />
-          <div className="absolute bottom-2 left-3 h-3 w-3 rounded-full bg-[#ef4444]" />
-          <div className="absolute bottom-2 right-3 h-3 w-3 rounded-full bg-[#facc15]" />
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-[#06233d] px-2 py-0.5 text-[10px] font-black text-white">2026</div>
+      <div className="relative h-16 overflow-hidden rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 via-white to-sky-50 sm:h-20">
+        <div className="absolute inset-x-5 bottom-2 h-1.5 rounded-full bg-green-200" />
+        <ConeIcon className="absolute bottom-2 left-5 h-10 w-8" shade="dark" />
+        <ConeIcon className="absolute bottom-2 right-5 h-10 w-8" shade="light" />
+        <WorldCupBall className="absolute left-1/2 top-2 h-11 w-11 -translate-x-1/2 sm:top-3" />
+        <div className="absolute bottom-3 left-1/2 h-9 w-14 -translate-x-1/2 rounded-lg border-2 border-[#06233d]/20 bg-white/80">
+          <div className="absolute left-3 top-2 h-2 w-2 rounded-full border-2 border-[#06233d]" />
+          <div className="absolute right-3 top-2 h-1.5 w-6 rounded bg-field" />
+          <div className="absolute right-3 top-5 h-1.5 w-6 rounded bg-green-300" />
         </div>
       </div>
     );
@@ -1264,25 +1247,49 @@ function InstructionArt({ type }: { type: "choose" | "playlist" | "start" }) {
 
   if (type === "playlist") {
     return (
-      <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-yellow-50 to-white">
-        <div className="absolute left-1/2 top-9 h-10 w-24 -translate-x-1/2 rounded-xl bg-[#06233d]" />
-        <div className="absolute left-[42%] top-4 h-11 w-12 -rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
-          <div className="absolute left-4 top-3 h-0 w-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-field" />
+      <div className="relative h-16 overflow-hidden rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 to-white sm:h-20">
+        <div className="absolute left-1/2 top-8 h-7 w-20 -translate-x-1/2 rounded-lg bg-[#06233d] sm:top-10" />
+        <div className="absolute left-[39%] top-4 h-8 w-10 -rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
+          <div className="absolute left-3 top-2 h-0 w-0 border-y-[7px] border-l-[11px] border-y-transparent border-l-field" />
         </div>
-        <div className="absolute left-[52%] top-3 h-11 w-12 rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
-          <div className="absolute left-4 top-3 h-0 w-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-[#1683e8]" />
+        <div className="absolute left-[51%] top-3 h-8 w-10 rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
+          <div className="absolute left-3 top-2 h-0 w-0 border-y-[7px] border-l-[11px] border-y-transparent border-l-[#1683e8]" />
         </div>
-        <div className="absolute left-1/2 top-[57px] -translate-x-1/2 text-xs font-black uppercase text-white">Playlist</div>
-        <div className="absolute bottom-3 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-[#f6c200]" />
+        <div className="absolute left-1/2 top-[52px] -translate-x-1/2 text-[9px] font-black uppercase text-white sm:top-[57px]">Playlist</div>
+        <div className="absolute bottom-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-[#f6c200] text-sm font-black text-[#06233d]">+</div>
       </div>
     );
   }
 
   return (
-    <div className="absolute left-4 right-4 top-5 h-[92px] overflow-hidden rounded-[18px] border-[3px] border-[#06233d]/20 bg-gradient-to-br from-field to-green-400">
+    <div className="relative h-16 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-field to-green-400 sm:h-20">
       <div className="absolute inset-y-0 left-1/2 w-px bg-white/45" />
-      <div className="absolute left-1/2 top-1/2 h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/60" />
-      <div className="absolute left-1/2 top-1/2 h-0 w-0 -translate-x-[35%] -translate-y-1/2 border-y-[18px] border-l-[28px] border-y-transparent border-l-white drop-shadow-sm" />
+      <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/60 bg-[#1683e8] shadow-[0_5px_0_rgba(6,35,61,0.16)]" />
+      <div className="absolute left-1/2 top-1/2 h-0 w-0 -translate-x-[35%] -translate-y-1/2 border-y-[12px] border-l-[18px] border-y-transparent border-l-white drop-shadow-sm" />
+      <div className="absolute bottom-2 right-4 rounded-md bg-white/90 px-2 py-1 text-[10px] font-black text-[#06233d]">00:30</div>
+    </div>
+  );
+}
+
+function ConeIcon({ className, shade }: { className: string; shade: "dark" | "light" }) {
+  return (
+    <div className={className}>
+      <div className="absolute bottom-0 left-0 h-1.5 w-full rounded bg-[#c2410c]" />
+      <div className={`absolute bottom-1 left-1/2 h-8 w-6 -translate-x-1/2 [clip-path:polygon(50%_0,100%_100%,0_100%)] ${shade === "dark" ? "bg-[#f97316]" : "bg-[#fb923c]"}`} />
+      <div className="absolute bottom-4 left-1/2 h-1 w-4 -translate-x-1/2 rounded bg-white/90" />
+      <div className="absolute bottom-6 left-1/2 h-1 w-3 -translate-x-1/2 rounded bg-white/90" />
+    </div>
+  );
+}
+
+function WorldCupBall({ className }: { className: string }) {
+  return (
+    <div className={`${className} rounded-full border-[3px] border-[#06233d] bg-white shadow-[0_4px_0_rgba(23,33,27,0.12)]`}>
+      <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded bg-[#06233d]" />
+      <div className="absolute left-2 top-2 h-2 w-2 rounded-full bg-[#2dd4bf]" />
+      <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#2563eb]" />
+      <div className="absolute bottom-2 left-2 h-2 w-2 rounded-full bg-[#ef4444]" />
+      <div className="absolute bottom-2 right-2 h-2 w-2 rounded-full bg-[#facc15]" />
     </div>
   );
 }
@@ -1779,11 +1786,13 @@ function EditablePlayerCard({
   );
 }
 
-function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { url: string; playing?: boolean; playRequest?: number; seconds?: number }) {
+function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0, duration = 60, onVideoPause }: { url: string; playing?: boolean; playRequest?: number; seconds?: number; duration?: number; onVideoPause?: () => void }) {
   const id = youtubeId(url);
   const [playerReady, setPlayerReady] = useState(false);
   const [tapPlaying, setTapPlaying] = useState(false);
+  const lastVideoStartAtRef = useRef(0);
   const shouldPlay = playing || tapPlaying;
+  const runnerProgress = duration > 0 ? Math.max(0, Math.min(1, 1 - seconds / duration)) : 0;
 
   useEffect(() => {
     setTapPlaying(false);
@@ -1792,6 +1801,7 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
 
   useEffect(() => {
     if (!playRequest) return;
+    lastVideoStartAtRef.current = Date.now();
     setTapPlaying(true);
     commandYouTubeFrame("playVideo");
     window.setTimeout(() => commandYouTubeFrame("playVideo"), 50);
@@ -1806,6 +1816,7 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
       setPlayerReady(false);
       return;
     }
+    lastVideoStartAtRef.current = Date.now();
     window.setTimeout(() => commandYouTubeFrame("playVideo"), 250);
     window.setTimeout(() => commandYouTubeFrame("playVideo"), 800);
     window.setTimeout(() => commandYouTubeFrame("playVideo"), 1500);
@@ -1817,6 +1828,26 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
       commandYouTubeFrame("pauseVideo");
     }
   }, [playing]);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      let data = event.data;
+      if (typeof data === "string") {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+      if (!data || data.event !== "infoDelivery") return;
+      if (data.info?.playerState === 2 && playing) {
+        if (Date.now() - lastVideoStartAtRef.current < 1600) return;
+        onVideoPause?.();
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [onVideoPause, playing]);
 
   if (!id) {
     return <div className="grid aspect-video place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Add a YouTube video link to show it here.</div>;
@@ -1831,6 +1862,7 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
         allowFullScreen
         onLoad={() => {
           setPlayerReady(true);
+          if (shouldPlay) lastVideoStartAtRef.current = Date.now();
           commandYouTubeFrame("playVideo");
           window.setTimeout(() => commandYouTubeFrame("playVideo"), 200);
         }}
@@ -1843,6 +1875,27 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
           <strong className="mt-1 block text-2xl font-black tabular-nums leading-none">{formatTimeHms(seconds)}</strong>
         </div>
       )}
+      {playing && (
+        <div className="pointer-events-none absolute inset-x-4 bottom-4 z-50">
+          <div className="relative h-9 overflow-hidden rounded-full border border-white/30 bg-slate-950/75 shadow-xl">
+            <div className="absolute left-3 right-[78px] top-1/2 h-1 -translate-y-1/2 rounded-full bg-white/35" />
+            <div
+              className="absolute left-3 top-1/2 h-1 -translate-y-1/2 rounded-full bg-green-400 transition-[width] duration-200 ease-linear"
+              style={{ width: `calc((100% - 90px) * ${runnerProgress})` }}
+            />
+            <div
+              className="absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center drop-shadow-md transition-[left] duration-200 ease-linear"
+              style={{ left: `calc(12px + (100% - 90px) * ${runnerProgress})` }}
+              aria-hidden="true"
+            >
+              <RunningKidBallIcon compact />
+            </div>
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-black/35 px-2 py-1 text-xs font-black tabular-nums text-white">
+              {formatTimeHms(seconds)}
+            </div>
+          </div>
+        </div>
+      )}
       {(!playerReady || (shouldPlay && isInAppPreviewBrowser())) && (
         <a
           href={url}
@@ -1850,6 +1903,7 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
           rel="noreferrer"
           onClick={(event) => {
             event.preventDefault();
+            lastVideoStartAtRef.current = Date.now();
             setTapPlaying(true);
             openCompanionVideoIfNeeded(url);
             commandYouTubeFrame("playVideo");
@@ -1859,13 +1913,37 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0 }: { ur
           }}
           className="absolute inset-0 z-40 grid place-items-center bg-black/10 text-center text-sm font-black text-white"
         >
-          <span>
-            <span className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-white/95 text-4xl text-field">▶</span>
+          <span className="grid justify-items-center gap-2">
+            <RunningKidBallIcon />
+            <span className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-white/95 text-field">
+              <Play className="h-10 w-10 fill-current" />
+            </span>
             {shouldPlay ? "Open video if this display blocks YouTube" : "Tap to play video"}
           </span>
         </a>
       )}
     </div>
+  );
+}
+
+function RunningKidBallIcon({ compact = false }: { compact?: boolean }) {
+  return (
+    <svg className={compact ? "h-8 w-12" : "h-16 w-24 drop-shadow-lg"} viewBox="0 0 110 78" aria-hidden="true">
+      <path d="M8 66h35M61 66h39" stroke="#d9fbe4" strokeWidth="4" strokeLinecap="round" opacity=".75" />
+      <g transform="translate(76 0) scale(-1 1)">
+        <circle cx="38" cy="17" r="10" fill="#fff" stroke="#0f5132" strokeWidth="4" />
+        <path
+          d="M37 29l-8 16 18-2 12-10M31 46l-15 14M47 43l7 19M31 36l-15-7M44 35l19 7"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <circle cx="88" cy="58" r="13" fill="#fff" stroke="#0f5132" strokeWidth="4" />
+      <path d="M88 49l5 4-2 7h-8l-2-7zM77 58l6-2M93 56l7-2M85 69l2-6M94 67l-4-5" fill="#0f5132" />
+    </svg>
   );
 }
 
