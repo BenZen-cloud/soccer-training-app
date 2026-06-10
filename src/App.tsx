@@ -473,7 +473,7 @@ function App() {
               <h1 className="text-2xl font-black tracking-wide">
                 SOCCER <span className="text-field">TRAINING</span>
               </h1>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Every Move Has A Purpose. Every Touch Counts.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Created by Ben, for the Love of the Game.</p>
             </div>
           </div>
           <button className="rounded-md p-2 text-3xl leading-none text-slate-800" aria-label="Menu">
@@ -890,6 +890,8 @@ function HomePage(props: {
   const playlistMinutes = Math.round(playlistDrills.reduce((total, drill) => total + (drill.durationSeconds || 60), 0) / 60);
   const [drillSearch, setDrillSearch] = useState("");
   const [selectedCategoryDrills, setSelectedCategoryDrills] = useState<Record<string, string[]>>({});
+  const [allDrillPickerOpen, setAllDrillPickerOpen] = useState(false);
+  const [allSelectedDrillIds, setAllSelectedDrillIds] = useState<string[]>([]);
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
   const recommendedPlaylists = useMemo(
@@ -1069,6 +1071,7 @@ function HomePage(props: {
         <label className="mb-3 grid gap-1 text-sm font-bold text-slate-700">
           Search drills
           <input
+            id="drillSearch"
             type="search"
             value={drillSearch}
             onChange={(event) => setDrillSearch(event.target.value)}
@@ -1076,6 +1079,67 @@ function HomePage(props: {
             className="focus-ring rounded-md border border-slate-300 px-3 py-2 font-normal"
           />
         </label>
+        <div className="mb-4 rounded-xl border border-green-200 bg-green-50/70 p-3">
+          <button
+            type="button"
+            onClick={() => setAllDrillPickerOpen((open) => !open)}
+            className="focus-ring flex w-full items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-left shadow-sm"
+          >
+            <span>
+              <span className="block text-sm font-black text-field">All drills dropdown</span>
+              <span className="block text-xs font-semibold text-slate-500">
+                {allSelectedDrillIds.length ? `${allSelectedDrillIds.length} checked` : "Open this list to pick multiple drills"}
+              </span>
+            </span>
+            <span className={`text-lg font-black text-field transition ${allDrillPickerOpen ? "rotate-180" : ""}`}>v</span>
+          </button>
+          {allDrillPickerOpen && (
+            <div className="mt-3 overflow-hidden rounded-lg border border-green-200 bg-white">
+              <div className="max-h-72 divide-y divide-slate-100 overflow-auto">
+                {visibleDrills.map((drill) => (
+                  <label key={drill.id} className="grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-sm hover:bg-green-50">
+                    <input
+                      type="checkbox"
+                      checked={allSelectedDrillIds.includes(drill.id)}
+                      onChange={(event) =>
+                        setAllSelectedDrillIds((current) =>
+                          event.target.checked ? Array.from(new Set([...current, drill.id])) : current.filter((id) => id !== drill.id)
+                        )
+                      }
+                      className="h-4 w-4 rounded border-slate-300 accent-field"
+                    />
+                    <span className="min-w-0">
+                      <span className="block truncate font-black text-slate-900">{drill.name}</span>
+                      <span className="block truncate text-xs font-semibold text-slate-500">{getDrillCategory(drill)}</span>
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{formatDuration(drill.durationSeconds)}</span>
+                  </label>
+                ))}
+                {!visibleDrills.length && <div className="px-3 py-4 text-sm font-semibold text-slate-500">No drills match your search.</div>}
+              </div>
+              <div className="grid gap-2 border-t border-green-100 bg-green-50 p-3 sm:grid-cols-[1fr_auto]">
+                <button
+                  type="button"
+                  disabled={!allSelectedDrillIds.length}
+                  onClick={() => {
+                    allSelectedDrillIds.forEach((id) => props.onToggleSessionDrill(id, true));
+                    setAllSelectedDrillIds([]);
+                  }}
+                  className="focus-ring rounded-md bg-field px-3 py-2 text-sm font-black text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Add Selected to Playlist
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAllSelectedDrillIds([])}
+                  className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  Clear Checks
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {categorizedVisibleDrills.map(([category, drills], index) => {
             const visual = categoryVisual(category, index);
@@ -1165,9 +1229,9 @@ function HomePage(props: {
 
 function TrainingInstructions() {
   const steps = [
-    { art: "choose" as const, badge: "01", badgeClass: "bg-field text-white", title: "Choose Drills", detail: "Pick your skills." },
-    { art: "playlist" as const, badge: "02", badgeClass: "bg-[#f6c200] text-[#06233d]", title: "Build Playlist", detail: "Add drills in order." },
-    { art: "start" as const, badge: "03", badgeClass: "bg-[#1683e8] text-white", title: "Start Training", detail: "Follow the video and timer." },
+    { art: "choose" as const, badge: "01", stepLabel: "Step 1", badgeClass: "bg-field text-white", title: "Choose Drills", detail: "Pick your skills." },
+    { art: "playlist" as const, badge: "02", stepLabel: "Step 2", badgeClass: "bg-[#f6c200] text-[#06233d]", title: "Build Playlist", detail: "Add drills in order." },
+    { art: "start" as const, badge: "03", stepLabel: "Step 3", badgeClass: "bg-[#1683e8] text-white", title: "Start Training", detail: "Follow the video and timer." },
   ];
 
   return (
@@ -1185,18 +1249,18 @@ function TrainingInstructions() {
             <p className="mt-2 max-w-xl text-sm font-bold text-white/90 sm:text-base">Choose your drills, build your playlist, and press Start.</p>
           </div>
         </div>
-        <div className="relative z-[1] grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+        <div className="relative z-[1] grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
           {steps.map((step) => (
-            <div key={step.title} className="relative min-h-[190px] rounded-3xl border-[3px] border-[#06233d] bg-white/95 p-4 shadow-[0_7px_0_#06233d,0_16px_20px_rgba(23,33,27,0.18)]">
+            <div key={step.title} className="relative min-h-[92px] rounded-2xl border-2 border-[#06233d] bg-white/95 p-2.5 shadow-[0_4px_0_#06233d,0_10px_14px_rgba(23,33,27,0.14)] sm:min-h-[118px]">
               <div
-                className={`absolute -top-3 right-4 grid h-10 w-10 place-items-center rounded-full border-[3px] border-white text-base font-black shadow-[0_0_0_3px_#06233d,0_5px_0_rgba(6,35,61,0.2)] ${step.badgeClass}`}
+                className={`absolute -top-2 right-2 grid h-7 w-7 place-items-center rounded-full border-2 border-white text-[11px] font-black shadow-[0_0_0_2px_#06233d,0_3px_0_rgba(6,35,61,0.18)] sm:h-8 sm:w-8 sm:text-xs ${step.badgeClass}`}
               >
                 {step.badge}
               </div>
               <InstructionArt type={step.art} />
-              <div className="mt-3 text-[11px] font-black uppercase tracking-wide text-green-700">Step {step.badge}</div>
-              <div className="text-xl font-black leading-tight text-[#06233d]">{step.title}</div>
-              <p className="mt-1 text-sm font-bold leading-snug text-slate-600">{step.detail}</p>
+              <div className="mt-1.5 text-[13px] font-black uppercase leading-none tracking-wide text-green-700 sm:text-sm">{step.stepLabel}</div>
+              <div className="text-sm font-black leading-tight text-[#06233d] sm:text-base">{step.title}</div>
+              <p className="mt-0.5 text-[11px] font-bold leading-snug text-slate-600 sm:text-xs">{step.detail}</p>
             </div>
           ))}
         </div>
@@ -1231,15 +1295,15 @@ function SoccerFieldLines() {
 function InstructionArt({ type }: { type: "choose" | "playlist" | "start" }) {
   if (type === "choose") {
     return (
-      <div className="relative h-16 overflow-hidden rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 via-white to-sky-50 sm:h-20">
-        <div className="absolute inset-x-5 bottom-2 h-1.5 rounded-full bg-green-200" />
-        <ConeIcon className="absolute bottom-2 left-5 h-10 w-8" shade="dark" />
-        <ConeIcon className="absolute bottom-2 right-5 h-10 w-8" shade="light" />
-        <WorldCupBall className="absolute left-1/2 top-2 h-11 w-11 -translate-x-1/2 sm:top-3" />
-        <div className="absolute bottom-3 left-1/2 h-9 w-14 -translate-x-1/2 rounded-lg border-2 border-[#06233d]/20 bg-white/80">
-          <div className="absolute left-3 top-2 h-2 w-2 rounded-full border-2 border-[#06233d]" />
-          <div className="absolute right-3 top-2 h-1.5 w-6 rounded bg-field" />
-          <div className="absolute right-3 top-5 h-1.5 w-6 rounded bg-green-300" />
+      <div className="relative h-9 overflow-hidden rounded-xl border border-green-200 bg-gradient-to-br from-green-50 via-white to-sky-50 sm:h-11">
+        <div className="absolute inset-x-4 bottom-1.5 h-1 rounded-full bg-green-200" />
+        <ConeIcon className="absolute bottom-1.5 left-4 h-6 w-5" shade="dark" />
+        <ConeIcon className="absolute bottom-1.5 right-4 h-6 w-5" shade="light" />
+        <WorldCupBall className="absolute left-1/2 top-1 h-7 w-7 -translate-x-1/2" />
+        <div className="absolute bottom-1.5 left-1/2 h-6 w-9 -translate-x-1/2 rounded-md border border-[#06233d]/20 bg-white/80">
+          <div className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full border border-[#06233d]" />
+          <div className="absolute right-1.5 top-1.5 h-1 w-4 rounded bg-field" />
+          <div className="absolute right-1.5 top-3.5 h-1 w-4 rounded bg-green-300" />
         </div>
       </div>
     );
@@ -1247,26 +1311,26 @@ function InstructionArt({ type }: { type: "choose" | "playlist" | "start" }) {
 
   if (type === "playlist") {
     return (
-      <div className="relative h-16 overflow-hidden rounded-2xl border border-yellow-200 bg-gradient-to-br from-yellow-50 to-white sm:h-20">
-        <div className="absolute left-1/2 top-8 h-7 w-20 -translate-x-1/2 rounded-lg bg-[#06233d] sm:top-10" />
-        <div className="absolute left-[39%] top-4 h-8 w-10 -rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
-          <div className="absolute left-3 top-2 h-0 w-0 border-y-[7px] border-l-[11px] border-y-transparent border-l-field" />
+      <div className="relative h-9 overflow-hidden rounded-xl border border-yellow-200 bg-gradient-to-br from-yellow-50 to-white sm:h-11">
+        <div className="absolute left-1/2 top-4 h-4 w-12 -translate-x-1/2 rounded-md bg-[#06233d] sm:top-5" />
+        <div className="absolute left-[38%] top-2 h-5 w-6 -rotate-6 rounded border border-[#06233d]/20 bg-white">
+          <div className="absolute left-2 top-1.5 h-0 w-0 border-y-[4px] border-l-[7px] border-y-transparent border-l-field" />
         </div>
-        <div className="absolute left-[51%] top-3 h-8 w-10 rotate-6 rounded-lg border-2 border-[#06233d]/20 bg-white">
-          <div className="absolute left-3 top-2 h-0 w-0 border-y-[7px] border-l-[11px] border-y-transparent border-l-[#1683e8]" />
+        <div className="absolute left-[51%] top-1.5 h-5 w-6 rotate-6 rounded border border-[#06233d]/20 bg-white">
+          <div className="absolute left-2 top-1.5 h-0 w-0 border-y-[4px] border-l-[7px] border-y-transparent border-l-[#1683e8]" />
         </div>
-        <div className="absolute left-1/2 top-[52px] -translate-x-1/2 text-[9px] font-black uppercase text-white sm:top-[57px]">Playlist</div>
-        <div className="absolute bottom-2 left-1/2 grid h-5 w-5 -translate-x-1/2 place-items-center rounded-full bg-[#f6c200] text-sm font-black text-[#06233d]">+</div>
+        <div className="absolute left-1/2 top-[26px] -translate-x-1/2 text-[6px] font-black uppercase text-white sm:top-[30px]">Playlist</div>
+        <div className="absolute bottom-1 left-1/2 grid h-3.5 w-3.5 -translate-x-1/2 place-items-center rounded-full bg-[#f6c200] text-[10px] font-black leading-none text-[#06233d]">+</div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-16 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-field to-green-400 sm:h-20">
+    <div className="relative h-9 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-field to-green-400 sm:h-11">
       <div className="absolute inset-y-0 left-1/2 w-px bg-white/45" />
-      <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/60 bg-[#1683e8] shadow-[0_5px_0_rgba(6,35,61,0.16)]" />
-      <div className="absolute left-1/2 top-1/2 h-0 w-0 -translate-x-[35%] -translate-y-1/2 border-y-[12px] border-l-[18px] border-y-transparent border-l-white drop-shadow-sm" />
-      <div className="absolute bottom-2 right-4 rounded-md bg-white/90 px-2 py-1 text-[10px] font-black text-[#06233d]">00:30</div>
+      <div className="absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/60 bg-[#1683e8] shadow-[0_3px_0_rgba(6,35,61,0.16)]" />
+      <div className="absolute left-1/2 top-1/2 h-0 w-0 -translate-x-[35%] -translate-y-1/2 border-y-[8px] border-l-[12px] border-y-transparent border-l-white drop-shadow-sm" />
+      <div className="absolute bottom-1 right-2 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-black text-[#06233d]">00:30</div>
     </div>
   );
 }
@@ -2043,6 +2107,12 @@ function parseDurationLabel(value: string) {
   if (text.includes("30")) return 30;
   const numeric = Number(text.match(/\d+/)?.[0] || 1);
   return Math.max(1, numeric) * (text.includes("sec") ? 1 : 60);
+}
+
+function formatDuration(seconds = 60) {
+  if (seconds < 60) return `${seconds} sec`;
+  const minutes = Math.round(seconds / 60);
+  return `${minutes} min`;
 }
 
 function starText(rating: number) {

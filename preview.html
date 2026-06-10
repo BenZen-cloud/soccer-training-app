@@ -180,6 +180,22 @@
       .category-check input { width:16px; height:16px; accent-color:var(--card-accent); }
       .category-empty-small { border-radius:10px; background:rgba(255,255,255,.72); padding:10px; color:#64746a; font-size:12px; font-weight:800; }
       .category-empty { grid-column:1/-1; border:1px dashed #cbd5cf; border-radius:10px; background:#f8fbf9; padding:14px; color:#64746a; font-weight:800; }
+      .all-drill-picker-wrap { margin:0 0 14px; border:1px solid #bbdfc8; border-radius:14px; background:rgba(240,249,243,.78); padding:10px; }
+      .all-drill-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; gap:12px; border:0; border-radius:10px; background:#fff; padding:10px 12px; text-align:left; box-shadow:0 4px 12px rgba(23,33,27,.06); color:#17211b; cursor:pointer; }
+      .all-drill-toggle strong { display:block; color:#15803d; font-size:14px; }
+      .all-drill-toggle span span { display:block; margin-top:2px; color:#64746a; font-size:12px; font-weight:800; }
+      .all-drill-toggle .chev { color:#15803d; font-size:18px; font-weight:900; transition:transform .18s ease; }
+      .all-drill-toggle.open .chev { transform:rotate(180deg); }
+      .all-drill-picker { display:none; margin-top:10px; overflow:hidden; border:1px solid #bbdfc8; border-radius:12px; background:#fff; }
+      .all-drill-picker.open { display:block; }
+      .all-drill-list { max-height:300px; overflow:auto; }
+      .all-drill-row { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:9px 10px; border-bottom:1px solid #edf1ee; cursor:pointer; }
+      .all-drill-row:hover { background:#f0f9f3; }
+      .all-drill-row input { width:16px; height:16px; accent-color:#15803d; }
+      .all-drill-row strong { display:block; color:#17211b; font-size:13px; line-height:1.15; }
+      .all-drill-row span { display:block; color:#64746a; font-size:11px; font-weight:800; }
+      .all-drill-duration { border-radius:999px; background:#f1f5f3; padding:5px 8px; color:#64746a; font-size:11px; font-weight:900; white-space:nowrap; }
+      .all-drill-actions { display:grid; grid-template-columns:1fr auto; gap:8px; padding:10px; border-top:1px solid #dceddf; background:#f0f9f3; }
       .drill-name-btn { width:100%; text-align:left; padding:6px 8px; border-radius:6px; border:1px solid #d3ddd6; background:#fff; color:#17211b; font-weight:800; cursor:pointer; }
       .select-chip { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:12px; font-weight:800; }
       .select-chip input { width:auto; }
@@ -201,47 +217,47 @@
       .instruction-badge { display:inline-flex; border-radius:999px; background:#06233d; color:#fff; padding:6px 14px; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; box-shadow:0 4px 0 rgba(23,33,27,.18); }
       .instruction-title { margin-top:8px; color:#fff; font-size:clamp(30px,4vw,42px); line-height:1; font-weight:900; text-shadow:0 3px 0 #06233d; }
       .instruction-subtitle { margin-top:8px; max-width:620px; color:rgba(255,255,255,.92); font-size:16px; line-height:1.25; font-weight:800; }
-      .instruction-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; position:relative; z-index:1; }
-      .instruction-step { --step-color:#15803d; position:relative; min-height:190px; border:3px solid #06233d; border-radius:24px; background:rgba(255,255,255,.95); padding:16px; box-shadow:0 7px 0 #06233d, 0 16px 20px rgba(23,33,27,.18); }
+      .instruction-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; position:relative; z-index:1; }
+      .instruction-step { --step-color:#15803d; position:relative; min-height:118px; border:2px solid #06233d; border-radius:16px; background:rgba(255,255,255,.95); padding:10px; box-shadow:0 4px 0 #06233d, 0 10px 14px rgba(23,33,27,.14); }
       .instruction-step:nth-child(2) { --step-color:#f6c200; }
       .instruction-step:nth-child(3) { --step-color:#1683e8; }
-      .step-badge { position:absolute; right:16px; top:-14px; width:40px; height:40px; display:grid; place-items:center; border:3px solid #fff; border-radius:999px; background:var(--step-color); color:#fff; font-size:16px; font-weight:900; box-shadow:0 0 0 3px #06233d, 0 5px 0 rgba(6,35,61,.2); }
+      .step-badge { position:absolute; right:8px; top:-8px; width:30px; height:30px; display:grid; place-items:center; border:2px solid #fff; border-radius:999px; background:var(--step-color); color:#fff; font-size:12px; font-weight:900; box-shadow:0 0 0 2px #06233d, 0 3px 0 rgba(6,35,61,.18); }
       .instruction-step:nth-child(2) .step-badge { color:#06233d; }
-      .instruction-number { display:block; margin-top:12px; color:#15803d; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; }
-      .instruction-step strong { display:block; margin-top:2px; color:#06233d; font-size:22px; line-height:1.05; font-weight:900; }
-      .instruction-step p { margin:6px 0 0; color:#475569; font-size:15px; line-height:1.25; font-weight:800; }
+      .instruction-number { display:block; margin-top:6px; color:#15803d; font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; line-height:1; }
+      .instruction-step strong { display:block; margin-top:1px; color:#06233d; font-size:16px; line-height:1.05; font-weight:900; }
+      .instruction-step p { margin:3px 0 0; color:#475569; font-size:12px; line-height:1.2; font-weight:800; }
       .instruction-footer { position:relative; z-index:1; justify-self:center; border-radius:999px; background:rgba(255,255,255,.95); color:#06233d; padding:10px 20px; font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:.04em; box-shadow:0 5px 0 rgba(6,35,61,.18); }
-      .instruction-art { position:relative; height:72px; margin-bottom:8px; overflow:hidden; border-radius:16px; border:1px solid rgba(21,128,61,.18); background:linear-gradient(135deg,#dff8e8,#ffffff); }
-      .instruction-art::before { content:""; position:absolute; inset:10px; border:1px dashed rgba(21,128,61,.22); border-radius:999px; }
+      .instruction-art { position:relative; height:44px; margin-bottom:6px; overflow:hidden; border-radius:12px; border:1px solid rgba(21,128,61,.18); background:linear-gradient(135deg,#dff8e8,#ffffff); }
+      .instruction-art::before { content:""; position:absolute; inset:7px; border:1px dashed rgba(21,128,61,.22); border-radius:999px; }
       .instruction-art.choose { background:linear-gradient(135deg,#e9fff2,#fff,#eef7ff); }
       .instruction-art.playlist { background:linear-gradient(135deg,#fff7cc,#fff); }
       .instruction-art.start { background:linear-gradient(135deg,#15803d,#39c45f); }
       .instruction-art.start::before { border-style:solid; border-color:rgba(255,255,255,.36); }
-      .mini-cone { position:absolute; bottom:10px; width:30px; height:40px; }
-      .mini-cone.left { left:20px; }
-      .mini-cone.right { right:20px; }
-      .mini-cone::before { content:""; position:absolute; left:50%; bottom:6px; width:23px; height:31px; transform:translateX(-50%); clip-path:polygon(50% 0,100% 100%,0 100%); background:#f97316; }
+      .mini-cone { position:absolute; bottom:6px; width:18px; height:25px; }
+      .mini-cone.left { left:18px; }
+      .mini-cone.right { right:18px; }
+      .mini-cone::before { content:""; position:absolute; left:50%; bottom:4px; width:14px; height:19px; transform:translateX(-50%); clip-path:polygon(50% 0,100% 100%,0 100%); background:#f97316; }
       .mini-cone.right::before { background:#fb923c; }
-      .mini-cone::after { content:""; position:absolute; left:0; right:0; bottom:0; height:7px; border-radius:4px; background:#c2410c; box-shadow:8px -14px 0 -7px rgba(255,255,255,.9), 10px -24px 0 -9px rgba(255,255,255,.9); }
-      .mini-ball { position:absolute; left:50%; top:10px; width:42px; height:42px; transform:translateX(-50%); border:3px solid #06233d; border-radius:50%; background:#fff; box-shadow:0 4px 0 rgba(23,33,27,.12); }
-      .mini-ball::before { content:""; position:absolute; left:50%; top:50%; width:12px; height:12px; transform:translate(-50%,-50%); border-radius:4px; background:#06233d; box-shadow:-13px -8px 0 -5px #2dd4bf, 13px -8px 0 -5px #2563eb, -11px 13px 0 -5px #ef4444, 11px 13px 0 -5px #facc15; }
-      .mini-board { position:absolute; left:50%; bottom:10px; width:54px; height:34px; transform:translateX(-50%); border:2px solid rgba(6,35,61,.18); border-radius:9px; background:rgba(255,255,255,.82); }
-      .mini-board::before { content:""; position:absolute; left:9px; top:8px; width:8px; height:8px; border:2px solid #06233d; border-radius:999px; }
-      .mini-board::after { content:""; position:absolute; right:9px; top:8px; width:24px; height:5px; border-radius:999px; background:#15803d; box-shadow:0 13px 0 #86efac; }
-      .mini-playlist-bin { position:absolute; left:50%; top:31px; width:78px; height:28px; transform:translateX(-50%); border-radius:9px; background:#06233d; }
-      .mini-card { position:absolute; top:14px; width:38px; height:32px; border:2px solid rgba(6,35,61,.18); border-radius:9px; background:#fff; }
+      .mini-cone::after { content:""; position:absolute; left:0; right:0; bottom:0; height:4px; border-radius:4px; background:#c2410c; box-shadow:5px -9px 0 -5px rgba(255,255,255,.9), 6px -15px 0 -6px rgba(255,255,255,.9); }
+      .mini-ball { position:absolute; left:50%; top:7px; width:28px; height:28px; transform:translateX(-50%); border:2px solid #06233d; border-radius:50%; background:#fff; box-shadow:0 2px 0 rgba(23,33,27,.12); }
+      .mini-ball::before { content:""; position:absolute; left:50%; top:50%; width:8px; height:8px; transform:translate(-50%,-50%); border-radius:3px; background:#06233d; box-shadow:-8px -5px 0 -3px #2dd4bf, 8px -5px 0 -3px #2563eb, -7px 8px 0 -3px #ef4444, 7px 8px 0 -3px #facc15; }
+      .mini-board { position:absolute; left:50%; bottom:7px; width:38px; height:23px; transform:translateX(-50%); border:1px solid rgba(6,35,61,.18); border-radius:6px; background:rgba(255,255,255,.82); }
+      .mini-board::before { content:""; position:absolute; left:6px; top:6px; width:6px; height:6px; border:1px solid #06233d; border-radius:999px; }
+      .mini-board::after { content:""; position:absolute; right:6px; top:6px; width:16px; height:3px; border-radius:999px; background:#15803d; box-shadow:0 8px 0 #86efac; }
+      .mini-playlist-bin { position:absolute; left:50%; top:21px; width:48px; height:17px; transform:translateX(-50%); border-radius:5px; background:#06233d; }
+      .mini-card { position:absolute; top:8px; width:22px; height:20px; border:1px solid rgba(6,35,61,.18); border-radius:5px; background:#fff; }
       .mini-card.one { left:38%; transform:rotate(-6deg); }
       .mini-card.two { left:52%; transform:rotate(6deg); }
-      .mini-card::before { content:""; position:absolute; left:12px; top:8px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:11px solid #15803d; }
-      .mini-plus { position:absolute; left:50%; bottom:8px; display:grid; place-items:center; width:22px; height:22px; transform:translateX(-50%); border-radius:999px; background:#f6c200; color:#06233d; font-weight:900; }
-      .mini-field { position:absolute; inset:10px; border-radius:14px; background:#15803d; overflow:hidden; }
-      .mini-field::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:2px; background:rgba(255,255,255,.38); }
-      .mini-field::after { content:""; position:absolute; left:50%; top:50%; width:32px; height:32px; margin:-16px 0 0 -16px; border:2px solid rgba(255,255,255,.55); border-radius:999px; }
-      .mini-play { position:absolute; left:50%; top:50%; width:40px; height:40px; transform:translate(-50%,-50%); border-radius:999px; background:#1683e8; box-shadow:0 4px 0 rgba(6,35,61,.2); }
-      .mini-play::before { content:""; position:absolute; left:16px; top:11px; width:0; height:0; border-top:11px solid transparent; border-bottom:11px solid transparent; border-left:17px solid #fff; }
-      .mini-time { position:absolute; right:16px; bottom:14px; border-radius:6px; background:rgba(255,255,255,.92); color:#06233d; padding:3px 7px; font-size:10px; font-weight:900; }
-      .instruction-art { position:relative; height:82px; margin-bottom:10px; overflow:hidden; border-radius:14px; border:1px solid rgba(21,128,61,.16); background:linear-gradient(135deg,#dff8e8,#ffffff); }
-      .instruction-art::before { content:""; position:absolute; inset:10px; border:1px dashed rgba(21,128,61,.2); border-radius:999px; }
+      .mini-card::before { content:""; position:absolute; left:7px; top:5px; width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:7px solid #15803d; }
+      .mini-plus { position:absolute; left:50%; bottom:4px; display:grid; place-items:center; width:15px; height:15px; transform:translateX(-50%); border-radius:999px; background:#f6c200; color:#06233d; font-size:11px; font-weight:900; }
+      .mini-field { position:absolute; inset:8px 12px; border-radius:8px; background:#15803d; overflow:hidden; }
+      .mini-field::before { content:""; position:absolute; left:50%; top:0; bottom:0; width:1px; background:rgba(255,255,255,.38); }
+      .mini-field::after { content:""; position:absolute; left:50%; top:50%; width:22px; height:22px; margin:-11px 0 0 -11px; border:1px solid rgba(255,255,255,.55); border-radius:999px; }
+      .mini-play { position:absolute; left:50%; top:50%; width:28px; height:28px; transform:translate(-50%,-50%); border-radius:999px; background:#1683e8; box-shadow:0 3px 0 rgba(6,35,61,.2); }
+      .mini-play::before { content:""; position:absolute; left:11px; top:7px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:11px solid #fff; }
+      .mini-time { position:absolute; right:8px; bottom:5px; border-radius:4px; background:rgba(255,255,255,.92); color:#06233d; padding:2px 4px; font-size:8px; font-weight:900; }
+      .instruction-art { position:relative; height:44px; margin-bottom:6px; overflow:hidden; border-radius:12px; border:1px solid rgba(21,128,61,.16); background:linear-gradient(135deg,#dff8e8,#ffffff); }
+      .instruction-art::before { content:""; position:absolute; inset:7px; border:1px dashed rgba(21,128,61,.2); border-radius:999px; }
       .instruction-art.choose { background:linear-gradient(135deg,#dff8e8,#f8fff9); }
       .instruction-art.playlist { background:linear-gradient(135deg,#e7f4ff,#f7fffb); }
       .instruction-art.start { background:linear-gradient(135deg,#fff3d5,#effaf0); }
@@ -302,7 +318,6 @@
       @media (max-width: 820px) {
         .home, .stats, .form, .two { grid-template-columns: 1fr; }
         .timer-progress, .notes-rating, .video-controls { grid-template-columns:1fr; }
-        .instruction-grid { grid-template-columns:1fr; }
         .recommended-playlists { grid-template-columns:1fr; }
         .category-card-grid { grid-template-columns:1fr; }
         .instruction-pill { display:none; }
@@ -319,6 +334,9 @@
         .drills-table { min-width:760px; }
         .table-scroll { overflow:auto; }
       }
+      @media (max-width: 560px) {
+        .instruction-grid { grid-template-columns:1fr; }
+      }
     </style>
   </head>
   <body>
@@ -328,7 +346,7 @@
           <div class="crest" aria-label="Soccer ball"><div class="ball"></div></div>
           <div>
             <h1>SOCCER <strong>TRAINING</strong></h1>
-            <div class="tag">Every Move Has A Purpose. Every Touch Counts.</div>
+            <div class="tag">Created by Ben, for the Love of the Game.</div>
           </div>
         </div>
         <button class="menu" aria-label="Menu">☰</button>
@@ -354,6 +372,8 @@
         running: false,
         closedCategories: {},
         drillSearch: "",
+        allDrillPickerOpen: false,
+        allDrillPickerIds: [],
         players: [{ id: "player-jordan", name: "Jordan", notes: "Sample player created from the Jordan 2.0 sheet.", drillIds: [], photoDataUrl: defaultPlayerAvatar }],
         sessions: [{ id: "session-1", playerId: "player-jordan", date: "2026-05-09", minutes: 35, completedDrills: 10, notes: "Started with ball mastery and finishing work." }],
         drills: [
@@ -1130,6 +1150,7 @@
       function fmt(s) { return String(Math.floor(s/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
       function fmtHms(s) { return String(Math.floor(s/3600)).padStart(2,"0") + ":" + String(Math.floor((s%3600)/60)).padStart(2,"0") + ":" + String(s%60).padStart(2,"0"); }
       function parseDuration(value) { const text = String(value || "").toLowerCase(); if (text.includes("30")) return 30; const num = Number(text.match(/\d+/)?.[0] || 60); return Math.max(1, num) * (text.includes("sec") ? 1 : 60); }
+      function durationLabel(seconds) { const value = Number(seconds || 60); return value < 60 ? `${value} sec` : `${Math.round(value / 60)} min`; }
       function setActiveDrill(id, keepScroll = false) {
         state.sessionComplete = false;
         state.selectedVideoDrill = id;
@@ -1346,6 +1367,35 @@
       }
       function setDrillSearch(value) {
         state.drillSearch = String(value || "");
+        save();
+        renderPreservingPosition();
+      }
+      function toggleAllDrillPicker() {
+        state.allDrillPickerOpen = !state.allDrillPickerOpen;
+        save();
+        renderPreservingPosition();
+      }
+      function toggleAllPickerDrill(id, checked) {
+        const ids = new Set(Array.isArray(state.allDrillPickerIds) ? state.allDrillPickerIds : []);
+        if (checked) ids.add(id);
+        else ids.delete(id);
+        state.allDrillPickerIds = Array.from(ids);
+        save();
+        renderPreservingPosition();
+      }
+      function addAllPickerSelection() {
+        const ids = Array.isArray(state.allDrillPickerIds) ? state.allDrillPickerIds : [];
+        if (!ids.length) return;
+        ids.forEach(id => {
+          if (!state.sessionDrillIds.includes(id)) state.sessionDrillIds.push(id);
+        });
+        if (!state.selectedVideoDrill && state.sessionDrillIds.length) state.selectedVideoDrill = state.sessionDrillIds[0];
+        state.allDrillPickerIds = [];
+        save();
+        renderPreservingPosition();
+      }
+      function clearAllPickerSelection() {
+        state.allDrillPickerIds = [];
         save();
         renderPreservingPosition();
       }
@@ -1751,9 +1801,9 @@
                 </div>
               </div>
               <div class="instruction-grid">
-                <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 01</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
-                <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 02</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
-                <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 03</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
+                <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 1</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
+                <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 2</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
+                <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 3</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
               </div>
               <div class="instruction-footer">Every touch counts.</div>
             </div>
@@ -1790,9 +1840,9 @@
                     </div>
                   </div>
                   <div class="instruction-grid">
-                    <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 01</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
-                    <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 02</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
-                    <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 03</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
+                    <div class="instruction-step"><span class="step-badge">01</span><div class="instruction-art choose" aria-hidden="true"><span class="mini-cone left"></span><span class="mini-cone right"></span><span class="mini-ball"></span><span class="mini-board"></span></div><span class="instruction-number">Step 1</span><strong>Choose Drills</strong><p>Pick your skills.</p></div>
+                    <div class="instruction-step"><span class="step-badge">02</span><div class="instruction-art playlist" aria-hidden="true"><span class="mini-playlist-bin"></span><span class="mini-card one"></span><span class="mini-card two"></span><span class="mini-plus">+</span></div><span class="instruction-number">Step 2</span><strong>Build Playlist</strong><p>Add drills in order.</p></div>
+                    <div class="instruction-step"><span class="step-badge">03</span><div class="instruction-art start" aria-hidden="true"><span class="mini-field"></span><span class="mini-play"></span><span class="mini-time">00:30</span></div><span class="instruction-number">Step 3</span><strong>Start Training</strong><p>Follow the video and timer.</p></div>
                   </div>
                   <div class="instruction-footer">Every touch counts.</div>
                 </div>
@@ -1801,7 +1851,7 @@
               <div class="inline-timer timer-strip" id="timerCard">${timerMarkup()}</div>
             </div>
             <details class="playlist-drop">
-              <summary><span>Training playlist <small class="muted">(${sessionDrills().length ? `${sessionDrills().length} selected` : "select drills below"})</small></span><span class="chev">⌄</span></summary>
+              <summary><span>Training playlist <small class="muted">(${sessionDrills().length ? `${sessionDrills().length} selected` : "select drills below"})</small></span><span class="chev">v</span></summary>
               <div class="playlist-actions"><button class="btn light" onclick="clearPlaylist()">Clear All</button><button class="btn primary" onclick="startPlaylist(event)">Start Playlist</button></div>
               <div class="playlist">${sessionDrills().map((drill, index) => `<div class="playlist-row ${activeVideoDrill?.id===drill.id?"active":""}"><span class="order">${index + 1}</span><button class="btn light" onclick="setActiveDrill('${drill.id}')" style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(drill.name)}</button><label style="font-size:11px">Min<input type="number" min="1" value="${Math.round((drill.durationSeconds || 60) / 60)}" onchange="setDrillDuration('${drill.id}', this.value)" style="padding:4px 6px"></label><span><button class="btn light" onclick="movePlaylist('${drill.id}', -1)" title="Move up">↑</button> <button class="btn light" onclick="movePlaylist('${drill.id}', 1)" title="Move down">↓</button></span><button class="btn light remove" onclick="removeFromPlaylist('${drill.id}')" title="Remove from playlist">Remove</button></div>`).join("") || `<div class="muted">Select drills from the player or drill pages.</div>`}</div>
             </details>
@@ -1816,6 +1866,25 @@
           <label style="margin-bottom:10px">Search drills
             <input id="drillSearch" type="search" placeholder="Type a drill name..." value="${esc(state.drillSearch || "")}" oninput="setDrillSearch(this.value)">
           </label>
+          <div class="all-drill-picker-wrap">
+            <button class="all-drill-toggle ${state.allDrillPickerOpen ? "open" : ""}" type="button" onclick="toggleAllDrillPicker()">
+              <span><strong>All drills dropdown</strong><span>${(state.allDrillPickerIds || []).length ? `${(state.allDrillPickerIds || []).length} checked` : "Open this list to pick multiple drills"}</span></span>
+              <span class="chev">v</span>
+            </button>
+            <div class="all-drill-picker ${state.allDrillPickerOpen ? "open" : ""}">
+              <div class="all-drill-list">
+                ${d.length ? d.map(drill => `<label class="all-drill-row">
+                  <input type="checkbox" ${Array.isArray(state.allDrillPickerIds) && state.allDrillPickerIds.includes(drill.id) ? "checked" : ""} onchange="toggleAllPickerDrill('${drill.id}', this.checked)">
+                  <span><strong>${esc(drill.name)}</strong><span>${esc(getDrillCategory(drill))}</span></span>
+                  <em class="all-drill-duration">${durationLabel(drill.durationSeconds)}</em>
+                </label>`).join("") : `<div class="category-empty-small">No drills match your search.</div>`}
+              </div>
+              <div class="all-drill-actions">
+                <button class="btn primary" type="button" onclick="addAllPickerSelection()" ${(state.allDrillPickerIds || []).length ? "" : "disabled"}>Add Selected to Playlist</button>
+                <button class="btn light" type="button" onclick="clearAllPickerSelection()">Clear Checks</button>
+              </div>
+            </div>
+          </div>
           <div class="category-card-grid">
             ${groupedDrills(d).map(([category, drills], index) => categoryCardMarkup(category, drills, index)).join("") || `<div class="category-empty">No drill categories match your search.</div>`}
           </div>
