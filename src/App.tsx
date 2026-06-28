@@ -40,6 +40,21 @@ const emptyDrill: Omit<Drill, "id"> = {
   assigned: true,
 };
 
+export function BouncingSoccerBall({
+  className = "",
+  label = "Bouncing soccer ball",
+}: {
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <span className={`bouncing-soccer-ball ${className}`} role="img" aria-label={label}>
+      <span className="bouncing-soccer-ball__ball" aria-hidden="true" />
+      <span className="bouncing-soccer-ball__shadow" aria-hidden="true" />
+    </span>
+  );
+}
+
 const drillCategoryOrder = [
   "Beginner Ball Skills",
   "1 Cone Drills",
@@ -462,24 +477,25 @@ function App() {
   const nextRestDrill = currentRestIndex >= 0 ? playerDrills.find((drill) => drill.id === restPlaylistIds[currentRestIndex + 1]) : undefined;
 
   return (
-    <div className="min-h-screen bg-[#f7faf8] text-ink">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+    <div className="min-h-screen bg-sun text-ink">
+      <header className="border-b border-slate-300 bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full border-4 border-field bg-white shadow-sm" aria-label="Soccer ball">
               <div className="h-8 w-8 rounded-full border-2 border-slate-900 bg-white [background:radial-gradient(circle_at_50%_50%,#111_0_16%,transparent_17%),linear-gradient(36deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(108deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(180deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(252deg,transparent_41%,#111_42%_46%,transparent_47%),linear-gradient(324deg,transparent_41%,#111_42%_46%,transparent_47%)]" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-wide">
+              <h1 className="flex flex-wrap items-center gap-2 text-2xl font-black tracking-wide">
                 SOCCER <span className="text-field">TRAINING</span>
+                <BouncingSoccerBall className="[--ball-size:1.35rem]" />
               </h1>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">Created by Ben, for the Love of the Game.</p>
+              <p className="text-xs font-black uppercase tracking-[0.08em] text-ink">Created by Ben, for the Love of the Game.</p>
             </div>
           </div>
-          <button className="rounded-md p-2 text-3xl leading-none text-slate-800" aria-label="Menu">
+          <button className="rounded-md p-2 text-3xl leading-none text-ink" aria-label="Menu">
             <Menu size={34} />
           </button>
-          <nav className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-5xl -translate-x-1/2 grid-cols-5 border-x border-t border-slate-200 bg-white/95 backdrop-blur">
+          <nav className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-6xl -translate-x-1/2 grid-cols-5 border-x border-t border-slate-300 bg-white/95 shadow-[0_-10px_25px_rgba(15,23,42,0.08)] backdrop-blur">
             {pages.map(({ name, icon: Icon }) => (
               <button
                 key={name}
@@ -487,8 +503,8 @@ function App() {
                   setPage(name);
                   if (name === "Home") window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className={`focus-ring flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs font-semibold ${
-                  page === name ? "bg-white text-field shadow-[inset_0_4px_0_#15803d]" : "bg-white text-slate-700 hover:bg-slate-50"
+                className={`focus-ring flex min-h-16 flex-col items-center justify-center gap-1 px-2 py-3 text-xs font-black transition ${
+                  page === name ? "bg-green-50 text-field shadow-[inset_0_5px_0_#16A34A]" : "bg-white text-ink hover:bg-slate-100"
                 }`}
               >
                 <Icon size={16} />
@@ -662,14 +678,14 @@ function App() {
       </main>
       {resting && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-5">
-          <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-soft">
+          <div className="w-full max-w-sm rounded-lg border border-slate-300 bg-white p-6 text-center shadow-soft">
             <h3 className="text-xl font-black uppercase text-field">{restDuration} Second Rest</h3>
             <div className="my-5 text-6xl font-black tabular-nums text-slate-900">{formatTimeHms(restSeconds)}</div>
             <div className="mb-4 rounded-lg border border-green-100 bg-green-50 p-3 text-left">
               <span className="block text-xs font-black uppercase text-field">Next drill</span>
               <strong className="mt-1 block text-lg leading-tight text-slate-900">{nextRestDrill?.name ?? "Training complete"}</strong>
             </div>
-            <label className="mb-4 grid gap-1 text-left text-sm font-bold text-slate-700">
+            <label className="mb-4 grid gap-1 text-left text-sm font-bold text-ink">
               Reps completed for {selectedVideoDrill?.name ?? "drill"}
               <input
                 type="number"
@@ -685,14 +701,14 @@ function App() {
                 className="focus-ring rounded-md border border-slate-300 px-3 py-3 text-center text-2xl font-black"
               />
             </label>
-            <p className="mb-5 text-sm text-slate-600">{restRepsSaved ? "Reps saved. Continue when ready." : "Type reps, save them, then continue when ready."}</p>
+            <p className="mb-5 text-sm font-semibold text-ink">{restRepsSaved ? "Reps saved. Continue when ready." : "Type reps, save them, then continue when ready."}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => {
                   saveCurrentCountForSession();
                   setRestRepsSaved(true);
                 }}
-                className="focus-ring rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-800 hover:bg-slate-50"
+                className="focus-ring rounded-md border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-ink hover:bg-slate-100"
               >
                 Save Reps
               </button>
@@ -702,7 +718,7 @@ function App() {
                   setRestRepsSaved(false);
                   advanceToNextPlaylistDrill(true);
                 }}
-                className="focus-ring rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
+                className="focus-ring min-h-11 rounded-md bg-field px-4 py-3 text-sm font-black text-white hover:bg-green-700"
               >
                 Continue
               </button>
@@ -718,10 +734,10 @@ function App() {
             </div>
             <h3 className="mt-3 text-2xl font-black uppercase text-field">Congratulations!</h3>
             <p className="mt-3 text-lg font-black text-slate-900">You have completed your training session.</p>
-            <p className="mt-2 text-sm text-slate-600">Great work. The playlist video has stopped.</p>
+            <p className="mt-2 text-sm font-semibold text-ink">Great work. The playlist video has stopped.</p>
             <button
               onClick={() => setSessionComplete(false)}
-              className="focus-ring mt-5 w-full rounded-md bg-field px-4 py-3 text-sm font-bold text-white hover:bg-green-700"
+              className="focus-ring mt-5 min-h-11 w-full rounded-md bg-field px-4 py-3 text-sm font-black text-white hover:bg-green-700"
             >
               Done
             </button>
@@ -743,7 +759,7 @@ type CategoryVisual = {
 };
 
 const categoryPalette = [
-  { background: "linear-gradient(135deg, #effaf3 0%, #d7f2e1 100%)", border: "#bbdfc8", accent: "#15803d" },
+  { background: "linear-gradient(135deg, #effaf3 0%, #d7f2e1 100%)", border: "#bbdfc8", accent: "#16A34A" },
   { background: "linear-gradient(135deg, #eef6ff 0%, #dbeafe 100%)", border: "#bfdbfe", accent: "#2563eb" },
   { background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", border: "#fed7aa", accent: "#ea580c" },
   { background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)", border: "#ddd6fe", accent: "#7c3aed" },
@@ -769,7 +785,7 @@ function categoryVisual(category: string, index: number): CategoryVisual {
       subtitle: "Quick touches and close control.",
       background: "linear-gradient(135deg, #edfdf4 0%, #d9f99d 120%)",
       border: "#bbf7d0",
-      accent: "#15803d",
+      accent: "#16A34A",
       pattern: "radial-gradient(circle at 18% 20%, rgba(21,128,61,.14) 0 18px, transparent 19px), radial-gradient(circle at 90% 10%, rgba(21,128,61,.12) 0 28px, transparent 29px)",
     };
   } else if (normalized.includes("pass")) {
@@ -892,6 +908,7 @@ function HomePage(props: {
   const [selectedCategoryDrills, setSelectedCategoryDrills] = useState<Record<string, string[]>>({});
   const [allDrillPickerOpen, setAllDrillPickerOpen] = useState(false);
   const [allSelectedDrillIds, setAllSelectedDrillIds] = useState<string[]>([]);
+  const [browseAllDrillsOpen, setBrowseAllDrillsOpen] = useState(false);
   const visibleDrills = props.drills.filter((drill) => drill.name.toLowerCase().includes(drillSearch.trim().toLowerCase()));
   const categorizedVisibleDrills = useMemo(() => groupDrillsByCategory(visibleDrills), [visibleDrills]);
   const recommendedPlaylists = useMemo(
@@ -913,21 +930,24 @@ function HomePage(props: {
   );
   return (
     <div className="space-y-5">
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+      <section className="rounded-3xl border border-slate-300 bg-white p-4 shadow-soft sm:p-6">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-xl font-black uppercase text-field">Tutorial Video</h3>
+          <h3 className="text-2xl font-black uppercase text-field">Tutorial Video</h3>
         </div>
-        <TrainingInstructions />
-        <div className="mb-4 grid items-start gap-3 md:grid-cols-[minmax(220px,340px)_1fr]">
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Drill video
+        <div className="mb-4 grid items-start gap-4">
+          <label className="grid gap-3 rounded-2xl border-2 border-green-200 bg-white p-4 text-sm font-black text-ink shadow-sm sm:grid-cols-[1fr_auto] sm:items-center">
+            <span>
+              <span className="block text-sm uppercase tracking-wide text-field">Current Drill</span>
+              <span className="mt-1 block text-2xl font-black text-slate-900">{videoDrill?.name ?? "Select a drill"}</span>
+              <span className="mt-1 block text-sm font-extrabold text-slate-700">Preview or change the drill before you train.</span>
+            </span>
             <select
               value={videoDrill?.id || ""}
               onChange={(event) => {
                 const drill = props.drills.find((item) => item.id === event.target.value);
                 if (drill) props.onActivateDrill(drill);
               }}
-              className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-normal"
+              className="focus-ring min-h-16 w-full rounded-2xl border-2 border-slate-300 bg-white px-5 py-4 text-lg font-black text-slate-900 sm:w-80"
             >
               {(props.drills.filter((drill) => props.sessionDrillIds.includes(drill.id)).length
                 ? props.drills.filter((drill) => props.sessionDrillIds.includes(drill.id))
@@ -941,9 +961,9 @@ function HomePage(props: {
               ))}
             </select>
           </label>
-          <div className="w-full justify-self-center md:col-span-2 md:max-w-[820px]">
+          <div className="w-full justify-self-center md:max-w-[900px]">
             <VideoFrame url={videoDrill?.videoLink || props.featuredVideo} playing={props.running} playRequest={props.playRequest} seconds={props.seconds} duration={props.duration} onVideoPause={props.onPause} />
-            <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+            <div className="mt-3 rounded-2xl border border-slate-300 bg-white p-3 shadow-sm">
               <TimerPanel
                 seconds={props.seconds}
                 running={props.running}
@@ -966,89 +986,99 @@ function HomePage(props: {
               />
             </div>
           </div>
-          <details className="group rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+          <details className="group rounded-2xl border border-green-200 bg-white p-3">
+            <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-2 py-2 text-base font-black text-field">
+              Instruction guide
+              <span className="text-lg font-black text-field group-open:rotate-180">v</span>
+            </summary>
+            <TrainingInstructions />
+          </details>
+          <details className="group rounded-2xl border border-slate-300 bg-white p-3 shadow-sm">
             <summary className="focus-ring flex cursor-pointer list-none items-center justify-between gap-3 rounded-md px-1 py-1">
               <span>
-                <span className="block text-sm font-bold text-slate-700">Training playlist</span>
-                <span className="text-xs text-slate-500">
+                <span className="block text-sm font-bold text-ink">Training playlist</span>
+                <span className="text-xs font-semibold text-ink">
                   {props.sessionDrillIds.length ? `${props.sessionDrillIds.length} selected` : "Select drills below"}
                 </span>
               </span>
               <span className="text-sm font-black text-field group-open:rotate-180">⌄</span>
             </summary>
-            <div className="mt-3 flex flex-wrap justify-end gap-1.5">
-              <button onClick={props.onClearPlaylist} className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            <div className="mt-3 flex flex-wrap justify-end gap-2">
+              <button onClick={props.onClearPlaylist} className="focus-ring min-h-12 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm font-black text-slate-900 hover:bg-slate-100">
                 Clear All
               </button>
-              <button onClick={props.onStartPlaylist} className="focus-ring rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
+              <button onClick={props.onStartPlaylist} className="focus-ring min-h-12 rounded-xl bg-field px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-green-700">
                 Start Playlist
               </button>
             </div>
-            <div className="mt-2 grid max-h-72 gap-1.5 overflow-auto">
+            <div className="mt-3 grid max-h-80 gap-2 overflow-auto">
               {props.sessionDrillIds
                 .map((id) => props.drills.find((drill) => drill.id === id))
                 .filter((drill): drill is Drill => Boolean(drill))
                 .map((drill, index) => (
                 <div
                   key={drill.id}
-                  className={`grid grid-cols-[1.75rem_minmax(0,1fr)_4.5rem_auto_auto] items-center gap-1.5 rounded-md border bg-white px-2 py-1.5 text-xs ${
-                    videoDrill?.id === drill.id ? "border-field shadow-[inset_4px_0_0_#15803d]" : "border-slate-200"
+                  className={`grid grid-cols-[1.5rem_minmax(0,1fr)_4.25rem_auto_auto] items-center gap-2 rounded-xl border bg-white px-3 py-2 text-sm ${
+                    videoDrill?.id === drill.id ? "border-field shadow-[inset_4px_0_0_#16A34A]" : "border-slate-300"
                   }`}
                 >
-                  <span className="font-black text-slate-500">{index + 1}</span>
-                  <button onClick={() => props.onActivateDrill(drill)} className="truncate rounded border border-slate-200 px-2 py-1 text-left font-bold">
+                  <span className="font-black text-ink">{index + 1}</span>
+                  <button onClick={() => props.onActivateDrill(drill)} className="min-h-11 truncate rounded-lg border border-slate-300 px-3 py-2 text-left font-black">
                     {drill.name}
                   </button>
-                  <label className="grid gap-0.5 text-[11px] font-bold text-slate-600">
+                  <label className="grid gap-0.5 text-xs font-black text-ink">
                     Min
                     <input
                       type="number"
                       min={1}
                       value={Math.round((drill.durationSeconds || 60) / 60)}
                       onChange={(event) => props.onUpdateDrillDuration(drill, Number(event.target.value))}
-                      className="focus-ring w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-normal"
+                      className="focus-ring min-h-10 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm font-bold"
                     />
                   </label>
                   <span className="flex gap-1">
-                    <button onClick={() => props.onMoveSessionDrill(drill.id, -1)} className="rounded border border-slate-300 px-2 py-1" aria-label="Move drill up">
+                    <button onClick={() => props.onMoveSessionDrill(drill.id, -1)} className="min-h-10 rounded-lg border border-slate-300 px-3 py-1 font-black" aria-label="Move drill up">
                       ↑
                     </button>
-                    <button onClick={() => props.onMoveSessionDrill(drill.id, 1)} className="rounded border border-slate-300 px-2 py-1" aria-label="Move drill down">
+                    <button onClick={() => props.onMoveSessionDrill(drill.id, 1)} className="min-h-10 rounded-lg border border-slate-300 px-3 py-1 font-black" aria-label="Move drill down">
                       ↓
                     </button>
                   </span>
                   <button
                     onClick={() => props.onToggleSessionDrill(drill.id, false)}
-                    className="rounded border border-red-200 px-2 py-1 font-bold text-red-700"
+                    className="min-h-11 rounded-lg border border-danger bg-red-50 px-3 py-2 font-black text-danger hover:bg-red-100"
                     aria-label={`Remove ${drill.name} from playlist`}
                   >
                     Remove
                   </button>
                 </div>
               ))}
-              {props.sessionDrillIds.length === 0 && <div className="rounded-md border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500">Select drills from the player or drill pages.</div>}
+              {props.sessionDrillIds.length === 0 && <div className="rounded-md border border-dashed border-slate-300 px-3 py-2 text-sm font-semibold text-ink">Select drills from the player or drill pages.</div>}
             </div>
           </details>
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      <section className="rounded-2xl border border-slate-300 bg-white p-4 shadow-soft sm:p-5">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-xl font-black uppercase text-field">Playlist Selection</h3>
-            <p className="mt-1 text-sm text-slate-500">Choose a category, select a drill, and add it to your training playlist.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-center">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
+            <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-center">
               <span className="block text-[10px] font-black uppercase text-green-700">Selected</span>
-              <strong className="block text-lg leading-none text-field">{props.sessionDrillIds.length}</strong>
+              <strong className="block text-2xl leading-none text-field">{props.sessionDrillIds.length}</strong>
             </div>
-            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center">
-              <span className="block text-[10px] font-black uppercase text-slate-600">Minutes</span>
-              <strong className="block text-lg leading-none text-slate-900">{playlistMinutes}</strong>
+            <div className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-center">
+              <span className="block text-[10px] font-black uppercase text-ink">Minutes</span>
+              <strong className="block text-2xl leading-none text-slate-900">{playlistMinutes}</strong>
             </div>
-            <button className="focus-ring rounded-md border border-blue-600 px-3 py-2 text-sm font-bold uppercase text-blue-700 hover:bg-blue-50">
-              + Add Drill
+            <button
+              type="button"
+              onClick={() => setBrowseAllDrillsOpen((open) => !open)}
+              className="focus-ring min-h-14 rounded-xl bg-field px-4 py-3 text-sm font-black uppercase text-white shadow-sm hover:bg-green-700"
+            >
+              {browseAllDrillsOpen ? "Hide Drills" : "+ Add Drill"}
             </button>
           </div>
         </div>
@@ -1062,13 +1092,27 @@ function HomePage(props: {
               className="focus-ring rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-left hover:border-field hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="block text-sm font-black text-field">{playlist.label}</span>
-              <span className="block text-xs font-semibold text-slate-600">
+              <span className="block text-xs font-bold text-ink">
                 {playlist.drills.length} drills - {playlist.detail}
               </span>
             </button>
           ))}
         </div>
-        <label className="mb-3 grid gap-1 text-sm font-bold text-slate-700">
+        <div className="rounded-2xl border border-slate-300 bg-white p-3">
+          <button
+            type="button"
+            onClick={() => setBrowseAllDrillsOpen((open) => !open)}
+            className="focus-ring flex min-h-14 w-full items-center justify-between gap-3 rounded-xl bg-[#F8FAF5] px-4 py-3 text-left hover:bg-green-50"
+          >
+            <span>
+              <span className="block text-lg font-black uppercase text-field">Browse All Drills</span>
+              <span className="block text-sm font-bold text-slate-800">Open categories, check drills, and add selected drills.</span>
+            </span>
+            <span className="rounded-full bg-field px-3 py-1 text-sm font-black text-white">{browseAllDrillsOpen ? "Hide" : "Open"}</span>
+          </button>
+          {browseAllDrillsOpen && (
+          <div className="mt-4 space-y-4">
+        <label className="grid gap-2 text-base font-black text-ink">
           Search drills
           <input
             id="drillSearch"
@@ -1076,10 +1120,10 @@ function HomePage(props: {
             value={drillSearch}
             onChange={(event) => setDrillSearch(event.target.value)}
             placeholder="Type a drill name..."
-            className="focus-ring rounded-md border border-slate-300 px-3 py-2 font-normal"
+            className="focus-ring min-h-14 rounded-xl border-2 border-slate-300 px-4 py-3 text-base font-bold"
           />
         </label>
-        <div className="mb-4 rounded-xl border border-green-200 bg-green-50/70 p-3">
+        <div className="rounded-xl border border-green-200 bg-green-50/70 p-3">
           <button
             type="button"
             onClick={() => setAllDrillPickerOpen((open) => !open)}
@@ -1087,7 +1131,7 @@ function HomePage(props: {
           >
             <span>
               <span className="block text-sm font-black text-field">All drills dropdown</span>
-              <span className="block text-xs font-semibold text-slate-500">
+              <span className="block text-xs font-semibold text-ink">
                 {allSelectedDrillIds.length ? `${allSelectedDrillIds.length} checked` : "Open this list to pick multiple drills"}
               </span>
             </span>
@@ -1097,7 +1141,7 @@ function HomePage(props: {
             <div className="mt-3 overflow-hidden rounded-lg border border-green-200 bg-white">
               <div className="max-h-72 divide-y divide-slate-100 overflow-auto">
                 {visibleDrills.map((drill) => (
-                  <label key={drill.id} className="grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-sm hover:bg-green-50">
+                  <label key={drill.id} className="grid min-h-14 cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-2 text-base hover:bg-green-50">
                     <input
                       type="checkbox"
                       checked={allSelectedDrillIds.includes(drill.id)}
@@ -1106,16 +1150,16 @@ function HomePage(props: {
                           event.target.checked ? Array.from(new Set([...current, drill.id])) : current.filter((id) => id !== drill.id)
                         )
                       }
-                      className="h-4 w-4 rounded border-slate-300 accent-field"
+                      className="h-6 w-6 rounded border-slate-300 accent-field"
                     />
                     <span className="min-w-0">
                       <span className="block truncate font-black text-slate-900">{drill.name}</span>
-                      <span className="block truncate text-xs font-semibold text-slate-500">{getDrillCategory(drill)}</span>
+                      <span className="block truncate text-xs font-bold text-ink">{getDrillCategory(drill)}</span>
                     </span>
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{formatDuration(drill.durationSeconds)}</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-black text-ink">{formatDuration(drill.durationSeconds)}</span>
                   </label>
                 ))}
-                {!visibleDrills.length && <div className="px-3 py-4 text-sm font-semibold text-slate-500">No drills match your search.</div>}
+                {!visibleDrills.length && <div className="px-3 py-4 text-sm font-bold text-ink">No drills match your search.</div>}
               </div>
               <div className="grid gap-2 border-t border-green-100 bg-green-50 p-3 sm:grid-cols-[1fr_auto]">
                 <button
@@ -1125,14 +1169,14 @@ function HomePage(props: {
                     allSelectedDrillIds.forEach((id) => props.onToggleSessionDrill(id, true));
                     setAllSelectedDrillIds([]);
                   }}
-                  className="focus-ring rounded-md bg-field px-3 py-2 text-sm font-black text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="focus-ring min-h-14 rounded-xl bg-field px-4 py-3 text-base font-black text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Add Selected to Playlist
                 </button>
                 <button
                   type="button"
                   onClick={() => setAllSelectedDrillIds([])}
-                  className="focus-ring rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                  className="focus-ring min-h-14 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-black text-ink hover:bg-slate-100"
                 >
                   Clear Checks
                 </button>
@@ -1140,7 +1184,7 @@ function HomePage(props: {
             </div>
           )}
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {categorizedVisibleDrills.map(([category, drills], index) => {
             const visual = categoryVisual(category, index);
             const selectedIds = selectedCategoryDrills[category] ?? [];
@@ -1150,26 +1194,26 @@ function HomePage(props: {
             return (
               <article
                 key={category}
-                className="relative overflow-hidden rounded-xl border p-3 shadow-sm"
-                style={{ background: visual.background, borderColor: visual.border }}
+                className="relative overflow-hidden rounded-2xl border-2 bg-white p-4 shadow-sm"
+                style={{ borderColor: visual.border }}
               >
-                <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: visual.pattern }} />
+                <div className="pointer-events-none absolute inset-0 opacity-35" style={{ background: visual.pattern }} />
                 <div className="relative flex items-start gap-3">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-sm font-black text-white shadow-sm" style={{ backgroundColor: visual.accent }}>
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-base font-black text-white shadow-sm" style={{ backgroundColor: visual.accent }}>
                     {visual.icon}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="text-base font-black text-slate-900">{visual.title}</h4>
-                        <p className="mt-0.5 text-xs font-semibold text-slate-600">{visual.subtitle}</p>
+                        <h4 className="text-xl font-black leading-tight text-slate-900">{visual.title}</h4>
+                        <p className="mt-1 text-sm font-extrabold leading-snug text-slate-800">{visual.subtitle}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-white/80 px-2 py-1 text-[11px] font-black text-slate-700">{drills.length} drills</span>
+                      <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-900">{drills.length} drills</span>
                     </div>
                     <div className="mt-3 grid gap-2">
-                      <div className="max-h-36 overflow-auto rounded-lg border border-white/70 bg-white/70 p-2 shadow-sm" role="group" aria-label={`Select drills from ${category}`}>
+                      <div className="max-h-48 overflow-auto rounded-xl border border-slate-200 bg-white p-2 shadow-sm" role="group" aria-label={`Select drills from ${category}`}>
                         {drills.map((drill) => (
-                          <label key={drill.id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs font-bold text-slate-800 hover:bg-white/80">
+                          <label key={drill.id} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-base font-black text-slate-900 hover:bg-green-50">
                             <input
                               type="checkbox"
                               checked={selectedIds.includes(drill.id)}
@@ -1182,10 +1226,10 @@ function HomePage(props: {
                                   return { ...current, [category]: nextIds };
                                 })
                               }
-                              className="h-4 w-4 rounded border-slate-300"
+                              className="h-6 w-6 rounded border-slate-300"
                               style={{ accentColor: visual.accent }}
                             />
-                            <span>{drill.name}</span>
+                            <span className="leading-snug">{drill.name}</span>
                           </label>
                         ))}
                       </div>
@@ -1194,7 +1238,7 @@ function HomePage(props: {
                           type="button"
                           disabled={!selectedDrills.length}
                           onClick={() => selectedDrills.forEach((drill) => props.onToggleSessionDrill(drill.id, true))}
-                          className="focus-ring rounded-md px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+                          className="focus-ring min-h-14 rounded-xl px-4 py-3 text-base font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
                           style={{ backgroundColor: visual.accent }}
                         >
                           Add Selected
@@ -1203,7 +1247,7 @@ function HomePage(props: {
                           type="button"
                           disabled={!previewDrill}
                           onClick={() => previewDrill && props.onActivateDrill(previewDrill)}
-                          className="focus-ring rounded-md border border-white/80 bg-white/90 px-3 py-2 text-sm font-black text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="focus-ring min-h-14 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Preview
                         </button>
@@ -1215,12 +1259,15 @@ function HomePage(props: {
             );
           })}
           {!categorizedVisibleDrills.length && (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm font-semibold text-slate-500 md:col-span-2 xl:col-span-3">
+            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm font-bold text-ink md:col-span-2 xl:col-span-3">
               No drill categories match your search.
             </div>
           )}
         </div>
-        <div className="pt-3 text-sm text-slate-500">{visibleDrills.length} of {props.drills.length} drills shown from Jordan 2.0 and the All Drills sheet.</div>
+        <div className="pt-1 text-sm font-bold text-slate-800">{visibleDrills.length} of {props.drills.length} drills shown from Jordan 2.0 and the All Drills sheet.</div>
+          </div>
+          )}
+        </div>
       </section>
 
     </div>
@@ -1235,36 +1282,37 @@ function TrainingInstructions() {
   ];
 
   return (
-    <section className="mb-4 overflow-hidden rounded-[32px] border-4 border-white bg-gradient-to-br from-green-500 via-lime-500 to-green-600 shadow-[0_18px_38px_rgba(21,128,61,0.22),inset_0_0_0_2px_rgba(21,128,61,0.18)]">
+    <section className="mb-2 overflow-hidden rounded-3xl border-2 border-white bg-gradient-to-br from-green-500 via-lime-500 to-green-600 shadow-[0_12px_28px_rgba(21,128,61,0.18),inset_0_0_0_2px_rgba(21,128,61,0.14)]">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');`}</style>
-      <div className="relative grid gap-5 p-4 font-['Fredoka',ui-sans-serif] text-[#06233d] sm:p-6 md:p-7">
+      <div className="relative grid gap-3 p-3 font-['Fredoka',ui-sans-serif] text-[#06233d] sm:p-4 md:p-5">
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.1)_0_10%,transparent_10%_20%)]" />
         <SoccerFieldLines />
         <div className="relative z-[1] flex flex-col items-start gap-2 text-white sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="inline-flex rounded-full bg-[#06233d] px-3.5 py-1.5 text-xs font-black uppercase tracking-wide shadow-[0_4px_0_rgba(23,33,27,0.18)]">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#06233d] px-3 py-1 text-[11px] font-black uppercase tracking-wide shadow-[0_3px_0_rgba(23,33,27,0.18)]">
               Instructions
+              <BouncingSoccerBall className="[--ball-size:1rem]" label="Small bouncing soccer ball" />
             </div>
-            <h4 className="mt-2 text-3xl font-black leading-none [text-shadow:0_3px_0_#06233d] sm:text-4xl">How to Start Training</h4>
-            <p className="mt-2 max-w-xl text-sm font-bold text-white/90 sm:text-base">Choose your drills, build your playlist, and press Start.</p>
+            <h4 className="mt-1.5 text-2xl font-black leading-none [text-shadow:0_2px_0_#06233d] sm:text-3xl">How to Start Training</h4>
+            <p className="mt-1 max-w-xl text-xs font-bold text-white/95 sm:text-sm">Choose your drills, build your playlist, and press Start.</p>
           </div>
         </div>
-        <div className="relative z-[1] grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-4">
+        <div className="relative z-[1] grid grid-cols-1 gap-2 sm:grid-cols-3 md:gap-3">
           {steps.map((step) => (
-            <div key={step.title} className="relative min-h-[92px] rounded-2xl border-2 border-[#06233d] bg-white/95 p-2.5 shadow-[0_4px_0_#06233d,0_10px_14px_rgba(23,33,27,0.14)] sm:min-h-[118px]">
+            <div key={step.title} className="relative min-h-[76px] rounded-2xl border-2 border-[#06233d] bg-white/95 p-2 shadow-[0_3px_0_#06233d,0_8px_12px_rgba(23,33,27,0.12)] sm:min-h-[90px]">
               <div
                 className={`absolute -top-2 right-2 grid h-7 w-7 place-items-center rounded-full border-2 border-white text-[11px] font-black shadow-[0_0_0_2px_#06233d,0_3px_0_rgba(6,35,61,0.18)] sm:h-8 sm:w-8 sm:text-xs ${step.badgeClass}`}
               >
                 {step.badge}
               </div>
               <InstructionArt type={step.art} />
-              <div className="mt-1.5 text-[13px] font-black uppercase leading-none tracking-wide text-green-700 sm:text-sm">{step.stepLabel}</div>
-              <div className="text-sm font-black leading-tight text-[#06233d] sm:text-base">{step.title}</div>
-              <p className="mt-0.5 text-[11px] font-bold leading-snug text-slate-600 sm:text-xs">{step.detail}</p>
+              <div className="mt-1 text-sm font-black uppercase leading-none tracking-wide text-green-700 sm:text-base">{step.stepLabel}</div>
+              <div className="text-base font-black leading-tight text-[#06233d] sm:text-lg">{step.title}</div>
+              <p className="mt-0.5 text-[11px] font-bold leading-snug text-ink sm:text-xs">{step.detail}</p>
             </div>
           ))}
         </div>
-        <div className="relative z-[1] justify-self-center rounded-full bg-white/95 px-5 py-2 text-sm font-black uppercase tracking-wide text-[#06233d] shadow-[0_5px_0_rgba(6,35,61,0.18)]">
+        <div className="relative z-[1] justify-self-center rounded-full bg-white/95 px-4 py-1.5 text-xs font-black uppercase tracking-wide text-[#06233d] shadow-[0_4px_0_rgba(6,35,61,0.16)] sm:text-sm">
           Every touch counts.
         </div>
       </div>
@@ -1383,8 +1431,8 @@ function PlayersPage({
   return (
     <PageShell title="Players" description="Add, edit, and delete players. Assign drills from the drill page.">
       {selectedPlayer && (
-        <section className="mb-5 flex items-center gap-5 rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white">
+        <section className="mb-5 flex items-center gap-5 rounded-lg border border-slate-300 bg-white p-4 shadow-soft">
+          <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full border border-slate-300 bg-white">
             {selectedPlayer.photoDataUrl ? (
               <img src={selectedPlayer.photoDataUrl} alt={`${selectedPlayer.name} photo`} className="h-full w-full object-cover" />
             ) : (
@@ -1395,12 +1443,12 @@ function PlayersPage({
           </div>
           <div className="min-w-0">
             <h3 className="text-3xl font-black">{selectedPlayer.name}</h3>
-            <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-600 sm:gap-8">
+            <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-ink sm:gap-8">
               <span>Position: Midfielder</span>
               <span>Age: 6</span>
               <span>Foot: Right</span>
             </div>
-            <p className="mt-2 text-sm text-slate-600">{selectedPlayer.notes || "Selected player profile"}</p>
+            <p className="mt-2 text-sm font-semibold text-ink">{selectedPlayer.notes || "Selected player profile"}</p>
           </div>
         </section>
       )}
@@ -1472,7 +1520,7 @@ function DrillsPage({
           Add Drill
         </ActionButton>
       </FormGrid>
-      <div className="mt-5 max-h-[520px] overflow-auto rounded-lg border border-slate-200 bg-white">
+      <div className="mt-5 max-h-[520px] overflow-auto rounded-lg border border-slate-300 bg-white">
         {drills.map((drill) => (
           <DrillRow key={drill.id} drill={drill} onSave={updateDrill} onDelete={() => deleteDrill(drill.id)} />
         ))}
@@ -1504,7 +1552,7 @@ function SessionsPage({
 
   return (
     <PageShell title="Training Sessions" description="Log training time, completed drills, and coach notes.">
-      <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-5">
+      <div className="grid gap-3 rounded-lg border border-slate-300 bg-white p-4 md:grid-cols-5">
         <select
           value={draft.playerId}
           onChange={(event) => setDraft({ ...draft, playerId: event.target.value })}
@@ -1531,15 +1579,15 @@ function SessionsPage({
       </div>
       <div className="mt-5 space-y-3">
         {state.sessions.map((session) => (
-          <div key={session.id} className="rounded-lg border border-slate-200 bg-white p-4">
+          <div key={session.id} className="rounded-lg border border-slate-300 bg-white p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <strong>{state.players.find((player) => player.id === session.playerId)?.name ?? "Player"}</strong>
-              <span className="text-sm text-slate-500">{session.date}</span>
+              <span className="text-sm font-semibold text-ink">{session.date}</span>
             </div>
-            <p className="mt-2 text-sm text-slate-700">
+            <p className="mt-2 text-sm text-ink">
               {session.minutes} minutes, {session.completedDrills} completed drills
             </p>
-            <p className="mt-1 text-sm text-slate-600">{session.notes}</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{session.notes}</p>
           </div>
         ))}
       </div>
@@ -1557,16 +1605,16 @@ function ProgressPage({ players, drills, sessions }: { players: Player[]; drills
           const percent = playerDrills.length ? Math.round((complete / playerDrills.length) * 100) : 0;
           const playerSessions = sessions.filter((session) => session.playerId === player.id);
           return (
-            <section key={player.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+            <section key={player.id} className="rounded-lg border border-slate-300 bg-white p-5 shadow-soft">
               <h3 className="text-xl font-bold">{player.name}</h3>
               <div className="mt-4 h-3 rounded-full bg-slate-100">
-                <div className="h-3 rounded-full bg-field" style={{ width: `${percent}%` }} />
+                <div className="h-3 rounded-full bg-progress" style={{ width: `${percent}%` }} />
               </div>
-              <p className="mt-3 text-sm text-slate-700">{percent}% complete</p>
-              <p className="text-sm text-slate-600">{playerSessions.reduce((sum, session) => sum + session.minutes, 0)} total training minutes</p>
+              <p className="mt-3 text-sm text-ink">{percent}% complete</p>
+              <p className="text-sm font-semibold text-ink">{playerSessions.reduce((sum, session) => sum + session.minutes, 0)} total training minutes</p>
               <div className="mt-4 space-y-2">
                 {playerDrills.slice(0, 5).map((drill) => (
-                  <div key={drill.id} className="flex justify-between rounded-md bg-slate-50 px-3 py-2 text-sm">
+                  <div key={drill.id} className="flex justify-between rounded-md bg-white px-3 py-2 text-sm">
                     <span>{drill.name}</span>
                     <span>
                       {drill.countHistory?.[drill.countHistory.length - 1]?.count ?? (drill.completed ? "Done" : "Open")}
@@ -1583,7 +1631,7 @@ function ProgressPage({ players, drills, sessions }: { players: Player[]; drills
           resetState();
           window.location.reload();
         }}
-        className="focus-ring mt-5 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        className="focus-ring mt-5 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-slate-100"
       >
         Reset to Excel sample data
       </button>
@@ -1636,22 +1684,22 @@ function TimerPanel({
   if (compact) {
     return (
       <div>
-        <div className="grid items-center gap-2 sm:grid-cols-[auto_minmax(170px,1fr)_auto_auto]">
-          <h3 className="text-sm font-black uppercase text-field">Training Timer</h3>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="grid min-w-24 flex-1 gap-1 text-[11px] font-bold text-slate-700 sm:max-w-28">
+        <div className="grid items-center gap-3 xl:grid-cols-[auto_minmax(260px,1fr)_auto_auto]">
+          <h3 className="text-lg font-black uppercase text-field">Training Timer</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="grid min-w-36 flex-1 gap-1 text-sm font-black text-ink sm:max-w-40">
               Countdown
               <select
                 value={duration}
                 onChange={(event) => onChooseDuration(Number(event.target.value))}
-                className="focus-ring rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-normal"
+                className="focus-ring min-h-14 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-lg font-black text-ink"
               >
                 <option value={60}>1:00</option>
                 <option value={45}>0:45</option>
                 <option value={30}>0:30</option>
               </select>
             </label>
-            <label className="grid min-w-24 flex-1 gap-1 text-[11px] font-bold text-slate-700 sm:max-w-28">
+            <label className="grid min-w-36 flex-1 gap-1 text-sm font-black text-ink sm:max-w-40">
               Rest
               <input
                 type="number"
@@ -1659,12 +1707,12 @@ function TimerPanel({
                 max={30}
                 value={restDuration}
                 onChange={(event) => onRestDurationChange(Number(event.target.value))}
-                className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-xs font-normal"
+                className="focus-ring min-h-14 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-lg font-black text-ink"
               />
             </label>
           </div>
-          <div className="text-2xl font-black tracking-wider tabular-nums text-slate-900">{formatTimeHms(seconds)}</div>
-          <div className="grid grid-cols-4 gap-1 sm:flex">
+          <div className="text-5xl font-black tracking-wider tabular-nums text-ink sm:text-6xl">{formatTimeHms(seconds)}</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <ActionButton onClick={onStart} icon={Play} disabled={running} compact>
               Start
             </ActionButton>
@@ -1679,37 +1727,37 @@ function TimerPanel({
             </ActionButton>
           </div>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full border border-slate-300 bg-slate-200" aria-label="Countdown time left">
-          <div className="h-full rounded-full bg-field transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
+        <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200" aria-label="Countdown time left">
+          <div className="h-full rounded-full bg-progress transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
         </div>
         {pendingCountSave && onSaveCountForSession && (
-          <button onClick={onSaveCountForSession} className="focus-ring mt-2 w-full rounded-md bg-field px-3 py-2 text-sm font-bold text-white hover:bg-green-700">
+          <button onClick={onSaveCountForSession} className="focus-ring mt-2 min-h-12 w-full rounded-md bg-field px-3 py-3 text-sm font-black text-white shadow-sm hover:bg-green-700">
             End Count & Save
           </button>
         )}
         {totalDrills !== undefined && progress !== undefined && (
-          <div className="mt-2 grid grid-cols-3 gap-1.5 border-t border-slate-200 pt-2">
-            <div className="rounded-md border border-slate-200 bg-white p-1.5">
-              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Completed</span>
-              <strong className="block text-base leading-tight text-slate-900">{completedCount ?? 0}/{totalDrills}</strong>
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-200 pt-3">
+            <div className="rounded-xl border border-slate-300 bg-white p-2">
+              <span className="block truncate text-[11px] font-black uppercase text-ink">Completed</span>
+              <strong className="block text-lg leading-tight text-ink">{completedCount ?? 0}/{totalDrills}</strong>
             </div>
-            <div className="rounded-md border border-slate-200 bg-white p-1.5">
-              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Progress</span>
-              <strong className="block text-base leading-tight text-slate-900">{progress}%</strong>
+            <div className="rounded-xl border border-slate-300 bg-white p-2">
+              <span className="block truncate text-[11px] font-black uppercase text-ink">Progress</span>
+              <strong className="block text-lg leading-tight text-ink">{progress}%</strong>
             </div>
-            <div className="rounded-md border border-slate-200 bg-white p-1.5">
-              <span className="block truncate text-[10px] font-black uppercase text-slate-500">Details</span>
-              <strong className="block text-xs leading-tight text-slate-900">{details}</strong>
+            <div className="rounded-xl border border-slate-300 bg-white p-2">
+              <span className="block truncate text-[11px] font-black uppercase text-ink">Details</span>
+              <strong className="block text-sm leading-tight text-ink">{details}</strong>
             </div>
           </div>
         )}
         {countHistory.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5 text-xs text-slate-600">
+          <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-bold text-ink">
             {countHistory
               .slice(-3)
               .reverse()
               .map((entry) => (
-                <span key={entry.id} className="rounded-full border border-slate-200 bg-white px-2 py-1">
+                <span key={entry.id} className="rounded-full border border-slate-300 bg-white px-2 py-1">
                   {entry.date}: {entry.count}
                 </span>
               ))}
@@ -1722,21 +1770,21 @@ function TimerPanel({
   return (
     <div>
       <h3 className="text-lg font-black uppercase text-field">Training Timer</h3>
-      <label className="mt-4 grid max-w-40 gap-1 text-sm font-bold text-slate-700">
+      <label className="mt-4 grid max-w-40 gap-1 text-sm font-black text-ink">
         Countdown
         <select
           value={duration}
           onChange={(event) => onChooseDuration(Number(event.target.value))}
-          className="focus-ring rounded-md border border-slate-300 bg-white px-2 py-1.5 font-normal"
+          className="focus-ring min-h-11 rounded-md border border-slate-400 bg-white px-3 py-2 font-bold text-ink"
         >
           <option value={60}>1:00</option>
           <option value={45}>0:45</option>
           <option value={30}>0:30</option>
         </select>
       </label>
-      <div className="my-10 text-6xl font-black tracking-wider tabular-nums text-slate-900 sm:text-7xl">{formatTimeHms(seconds)}</div>
-      <div className="mb-4 h-4 overflow-hidden rounded-full border border-slate-300 bg-slate-200" aria-label="Countdown time left">
-        <div className="h-full rounded-full bg-field transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
+      <div className="my-10 text-7xl font-black tracking-wider tabular-nums text-ink sm:text-8xl">{formatTimeHms(seconds)}</div>
+      <div className="mb-4 h-4 overflow-hidden rounded-full border border-slate-400 bg-slate-100" aria-label="Countdown time left">
+        <div className="h-full rounded-full bg-progress transition-[width] duration-200 ease-linear" style={{ width: `${timeLeftPercent}%` }} />
       </div>
       <div className="grid grid-cols-3 gap-2">
         <ActionButton onClick={onStart} icon={Play} disabled={running}>
@@ -1761,7 +1809,7 @@ function DrillRow({ drill, onSave, onDelete }: { drill: Drill; onSave: (drill: D
 
   if (editing) {
     return (
-      <div className="grid gap-2 border-b border-slate-200 p-2 md:grid-cols-6">
+      <div className="grid gap-2 border-b border-slate-300 p-2 md:grid-cols-6">
         <input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-xs md:col-span-2" />
         <input value={draft.videoLink} onChange={(event) => setDraft({ ...draft, videoLink: event.target.value })} className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-xs md:col-span-2" />
         <input type="number" min={1} max={5} value={draft.rating} onChange={(event) => setDraft({ ...draft, rating: Number(event.target.value) })} className="focus-ring rounded-md border border-slate-300 px-2 py-1.5 text-xs" />
@@ -1775,17 +1823,17 @@ function DrillRow({ drill, onSave, onDelete }: { drill: Drill; onSave: (drill: D
   }
 
   return (
-    <div className="grid gap-2 border-b border-slate-200 p-2 text-xs md:grid-cols-[auto_1fr_auto_auto_auto] md:items-center">
+    <div className="grid gap-2 border-b border-slate-300 p-2 text-xs md:grid-cols-[auto_1fr_auto_auto_auto] md:items-center">
       <input type="checkbox" checked={drill.completed} onChange={(event) => onSave({ ...drill, completed: event.target.checked })} className="h-4 w-4 accent-field" />
       <div className="min-w-0">
         <div className="truncate font-semibold">{drill.name}</div>
-        <div className="truncate text-slate-600">{drill.notes}</div>
+        <div className="truncate text-ink">{drill.notes}</div>
       </div>
-      <span className="text-slate-600">{drill.timer ? `${drill.timer} min` : "No timer"}</span>
+      <span className="text-ink">{drill.timer ? `${drill.timer} min` : "No timer"}</span>
       <span className="font-semibold text-field">{drill.rating}/5</span>
       <div className="flex gap-2">
         {drill.videoLink && (
-          <a href={drill.videoLink} target="_blank" rel="noreferrer" className="focus-ring rounded-md border border-slate-300 p-2 text-slate-700 hover:bg-slate-50" aria-label="Open video">
+          <a href={drill.videoLink} target="_blank" rel="noreferrer" className="focus-ring rounded-md border border-slate-300 p-2 text-ink hover:bg-slate-100" aria-label="Open video">
             <Video size={16} />
           </a>
         )}
@@ -1823,7 +1871,7 @@ function EditablePlayerCard({
   };
 
   return (
-    <section className={`rounded-lg border bg-white p-4 shadow-soft ${selected ? "border-field" : "border-slate-200"}`}>
+    <section className={`rounded-lg border bg-white p-4 shadow-soft ${selected ? "border-field" : "border-slate-300"}`}>
       <div className="flex items-center justify-between gap-3">
         <button onClick={onSelect} className="text-left text-lg font-bold">
           {player.name}
@@ -1833,10 +1881,10 @@ function EditablePlayerCard({
       <div className="mt-3 grid gap-2">
         <input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm" />
         <textarea value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm" />
-        <div className="max-h-56 space-y-2 overflow-auto rounded-md border border-slate-200 p-3">
-          <div className="text-sm font-semibold text-slate-700">Assigned drills</div>
+        <div className="max-h-56 space-y-2 overflow-auto rounded-md border border-slate-300 p-3">
+          <div className="text-sm font-semibold text-ink">Assigned drills</div>
           {allDrills.map((drill) => (
-            <label key={drill.id} className="flex items-center gap-2 text-sm text-slate-700">
+            <label key={drill.id} className="flex items-center gap-2 text-sm text-ink">
               <input type="checkbox" checked={draft.drillIds.includes(drill.id)} onChange={() => toggleDrill(drill.id)} className="h-4 w-4 accent-field" />
               {drill.name}
             </label>
@@ -1914,10 +1962,10 @@ function VideoFrame({ url, playing = false, playRequest = 0, seconds = 0, durati
   }, [onVideoPause, playing]);
 
   if (!id) {
-    return <div className="grid aspect-video place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">Add a YouTube video link to show it here.</div>;
+    return <div className="grid aspect-video place-items-center rounded-lg border border-dashed border-slate-300 bg-white text-sm text-ink">Add a YouTube video link to show it here.</div>;
   }
   return (
-    <div className="relative aspect-video overflow-hidden rounded-lg border border-slate-200 bg-slate-950">
+    <div className="relative aspect-video overflow-hidden rounded-lg border border-slate-300 bg-slate-950">
       <iframe
         title="Tutorial video"
         src={youtubeEmbedUrl(id, shouldPlay)}
@@ -2016,7 +2064,7 @@ function PageShell({ title, description, children }: { title: string; descriptio
     <section>
       <div className="mb-5">
         <h2 className="text-2xl font-bold">{title}</h2>
-        <p className="text-sm text-slate-600">{description}</p>
+        <p className="text-sm font-semibold text-ink">{description}</p>
       </div>
       {children}
     </section>
@@ -2024,23 +2072,23 @@ function PageShell({ title, description, children }: { title: string; descriptio
 }
 
 function FormGrid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-4">{children}</div>;
+  return <div className="grid gap-3 rounded-lg border border-slate-300 bg-white p-4 md:grid-cols-4">{children}</div>;
 }
 
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <label className="grid gap-1 text-sm font-medium text-slate-700">
+    <label className="grid gap-1 text-sm font-black text-ink">
       {label}
-      <input value={value} onChange={(event) => onChange(event.target.value)} className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-normal" />
+      <input value={value} onChange={(event) => onChange(event.target.value)} className="focus-ring min-h-11 rounded-md border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-ink" />
     </label>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-      <div className="text-sm text-slate-600">{label}</div>
-      <div className="mt-1 text-2xl font-bold">{value}</div>
+    <div className="rounded-lg border border-slate-300 bg-white p-4 shadow-sm">
+      <div className="text-sm font-black text-ink">{label}</div>
+      <div className="mt-1 text-2xl font-black text-ink">{value}</div>
     </div>
   );
 }
@@ -2064,11 +2112,11 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`focus-ring flex items-center justify-center gap-2 rounded-md font-semibold disabled:cursor-not-allowed disabled:opacity-45 ${compact ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"} ${
-        variant === "solid" ? "bg-field text-white hover:bg-green-700" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+      className={`focus-ring flex items-center justify-center gap-2 rounded-xl font-black shadow-sm disabled:cursor-not-allowed disabled:opacity-45 ${compact ? "min-h-14 px-5 py-3 text-base" : "min-h-14 px-5 py-3 text-base"} ${
+        variant === "solid" ? "bg-field text-white hover:bg-green-700" : "border-2 border-slate-300 bg-white text-ink hover:bg-slate-100"
       }`}
     >
-      <Icon size={16} />
+      <Icon size={compact ? 18 : 20} />
       {children}
     </button>
   );
@@ -2077,7 +2125,7 @@ function ActionButton({
 
 function IconButton({ label, icon: Icon, onClick, danger = false }: { label: string; icon: LucideIcon; onClick: () => void; danger?: boolean }) {
   return (
-    <button onClick={onClick} aria-label={label} title={label} className={`focus-ring rounded-md border p-2 ${danger ? "border-red-200 text-red-600 hover:bg-red-50" : "border-slate-300 text-slate-700 hover:bg-slate-50"}`}>
+    <button onClick={onClick} aria-label={label} title={label} className={`focus-ring min-h-11 min-w-11 rounded-md border p-2 font-black shadow-sm ${danger ? "border-danger bg-red-50 text-danger hover:bg-red-100" : "border-slate-400 bg-white text-ink hover:bg-slate-100"}`}>
       <Icon size={16} />
     </button>
   );

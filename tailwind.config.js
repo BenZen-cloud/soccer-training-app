@@ -4,11 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        field: "#15803d",
-        ink: "#17211b",
+        field: "#16A34A",
+        progress: "#22C55E",
+        danger: "#DC2626",
+        ink: "#0F172A",
+        sun: "#F8FAF5",
+        surface: "#FFFFFF",
       },
       boxShadow: {
-        soft: "0 10px 30px rgba(23, 33, 27, 0.08)",
+        soft: "0 14px 34px rgba(15, 23, 42, 0.10)",
       },
     },
   },
